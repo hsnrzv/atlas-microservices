@@ -1,6 +1,6 @@
 # ADR-0005: Authentication: provider-neutral OIDC, BFF session for web, PKCE system browser for Capacitor
 
-- Status: Proposed
+- Status: Proposed (provider choice accepted by the owner on 2026-11-12: Microsoft Entra External ID)
 - Date: 2026-11-12
 - Deciders: @hsnrzv (owner) to review; proposed by the backend planning agent
 
@@ -17,8 +17,9 @@ Authentication must be in place before any publicly reachable deployment. §13.1
 - A system-browser login for Capacitor, with tokens in secure native storage.
 - No test identity in production.
 
-The identity provider (§21.1) and the mobile auth/storage plugins (§21.9) are open. Phase 3 must enforce
-ownership; Phase 9 finalises the provider. The edge contract routes only `/api/` to the backend and
+The identity provider (§21.1) was decided by the owner on 2026-11-12: Microsoft Entra External ID (see the
+provider choice below). The mobile auth/storage plugins (§21.9) are open. Phase 3 must enforce ownership; Phase 9
+integrates the provider. The edge contract routes only `/api/` to the backend and
 everything else to the frontend.
 
 Verified on 2026-11-12: Spring Boot 4.1.2 manages Spring Security 7.1.2 and Spring Session 4.1.1.
@@ -64,8 +65,7 @@ Proposed default:
    criterion). The BFF login flow and the production provider follow in Phase 9, or earlier if any
    environment becomes reachable from the internet.
 
-Provider choice (open, §21.1). Prices and quotas are not included because they were not verified in this
-session; compare them in `atlas-infra` COST-COMPARISON before deciding.
+Provider choice (§21.1). Options as compared before the decision:
 
 | Option | Pros | Cons |
 |---|---|---|
@@ -73,7 +73,21 @@ session; compare them in `atlas-infra` COST-COMPARISON before deciding.
 | Self-hosted Keycloak | Full control, open source (Apache-2.0), same server locally and in production | Another stateful workload with its own database, upgrades, backups and security patching; extra compute cost on a small cluster (§13.1 warns about this) |
 
 Recommended default: **managed OIDC provider for dev/staging/prod**, and Keycloak only as an optional local
-test IdP, so that operating effort stays low. Final choice in Phase 9 after the cost/terms check.
+test IdP, so that operating effort stays low.
+
+**Owner decision (2026-11-12): Microsoft Entra External ID** (external tenant linked to the Azure subscription;
+`atlas-infra` ADR-0009). Facts checked on 2026-11-12:
+
+- The first 50,000 monthly active users are free. The SMS authentication factor is a paid add-on and is not used.
+- Azure AD B2C is no longer available to new customers since 2025-05-01, so it is not an option.
+- Authority: `https://<tenant-subdomain>.ciamlogin.com/`. A custom sign-in domain needs Azure Front Door, which is
+  out of MVP scope.
+- Authorization Code + PKCE for public native clients and confidential web clients are supported.
+- Self-service sign-up is disabled in the user flow (`isSignUpAllowed: false`); the owner account is created by an
+  admin (B-8).
+
+This decision does not change the provider-neutral design above. Issuer, client IDs, audience and secrets remain
+configuration. No Microsoft SDK is added to the backend.
 
 ## Consequences
 
@@ -109,4 +123,8 @@ test IdP, so that operating effort stays low. Final choice in Phase 9 after the 
 - IETF draft, OAuth 2.0 for Browser-Based Applications:
   <https://datatracker.ietf.org/doc/draft-ietf-oauth-browser-based-apps/> (accessed 2026-11-12)
 - ADR-0004 (owner FK), ADR-0006 (error format); see `atlas-infra` PLAN-INFRASTRUCTURE-CICD (secrets,
-  ingress) and the `atlas` PLAN-FRONTEND (Capacitor auth plugin)
+  ingress), `atlas-infra` ADR-0009 (Azure services) and the `atlas` PLAN-FRONTEND (Capacitor auth plugin)
+- Microsoft Entra External ID overview:
+  <https://learn.microsoft.com/en-us/entra/external-id/customers/overview-customers-ciam> (accessed 2026-11-12)
+- Microsoft Entra External ID pricing:
+  <https://learn.microsoft.com/en-us/entra/external-id/external-identities-pricing> (accessed 2026-11-12)

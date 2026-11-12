@@ -38,8 +38,8 @@ Security yet (shared contract, user decision 1).
 
 | Area | Delivered | Evidence |
 |---|---|---|
-| Scaffold | Spring Boot **4.1.2**, Java **21**, Maven Wrapper 3.3.4 (Maven **3.10.0** from Maven Central), group `dev.myatlas`, artifact `atlas-backend`, single class `dev.myatlas.AtlasApplication` | `pom.xml`, `mvnw`, `.mvn/wrapper/maven-wrapper.properties` |
-| Build rules | `maven-enforcer-plugin` 3.6.3: Java ≥ 21, Maven ≥ 3.10.0, dependency convergence | `./mvnw -B verify` |
+| Scaffold | Spring Boot **4.1.2**, Java **25** (scaffolded on 21, moved by [ADR-0008](../adr/0008-java-25-lts-runtime.md)), Maven Wrapper 3.3.4 (Maven **3.10.0** from Maven Central), group `dev.myatlas`, artifact `atlas-backend`, single class `dev.myatlas.AtlasApplication` | `pom.xml`, `mvnw`, `.mvn/wrapper/maven-wrapper.properties` |
+| Build rules | `maven-enforcer-plugin` 3.6.3: Java ≥ 25 (`java.version`), Maven ≥ 3.10.0, dependency convergence | `./mvnw -B verify` |
 | Modularity | Spring Modulith **2.1.1**; `ModularityTests` runs `ApplicationModules.verify()` and writes module docs to `target/spring-modulith-docs/` | `src/test/java/dev/myatlas/ModularityTests.java` |
 | Database | PostgreSQL **18** (`postgres:18.6-alpine`), Flyway 12.4.0 with schema `atlas`, `V1__baseline.sql` (schema comment, no tables), Hibernate `ddl-auto=validate` | `src/main/resources/db/migration/` |
 | Configuration | `application.yaml` (common), `application-local.yaml` (plain-text logs, Docker Compose on). No `dev`/`staging`/`prod` files: these environments are configured only through environment variables | `src/main/resources/` |
@@ -61,8 +61,9 @@ Security yet (shared contract, user decision 1).
 3. **Same-origin web hosting.** The edge proxy/ingress routes `/api/` to the backend and everything else
    to the frontend (shared contract). Web needs no CORS; Capacitor CORS is decided in Phase 10
    ([API-CONTRACT §13](../architecture/API-CONTRACT.md#13-cors)).
-4. **Identity provider unknown until Phase 9** (§21.1). Phase 3 implements a provider-neutral JWT
-   resource server that is tested with signed test tokens (ADR-0005).
+4. **Identity provider: Microsoft Entra External ID** (§21.1, owner decision 2026-11-12; integration in Phase 9).
+   Phase 3 still implements a provider-neutral JWT resource server that is tested with signed test tokens
+   (ADR-0005); no provider SDK.
 5. **No external integrations** (banks, brokers, FX rates, LLMs) in Phases 1–4 (§2, §7.3, §8).
 6. **Java 25 LTS and Spring Boot 4.1.x** stay the baseline (ADR-0007, Java part superseded by ADR-0008). Patch/minor updates arrive through
    Dependabot PRs and must pass CI.
@@ -162,8 +163,8 @@ Decision record: ADR-0005 (Proposed). Implementation is phased:
 |---|---|
 | 1 (done) | No Spring Security dependency. Only `health`/`info` actuator endpoints are exposed, without details. Not deployed to any reachable environment. |
 | 3 | `spring-boot-starter-security-oauth2-resource-server`: every `/api/**` request authenticated; actuator `health/**` and `info` public; JWT validation of signature, issuer, expiry and audience (`spring.security.oauth2.resourceserver.jwt.issuer-uri` and `.audiences`, both Boot properties); `CurrentOwner` resolves `(iss, sub)` to `owner_id` (just-in-time row in `profile_app_user`); owner-scoped repositories; cross-owner → 404; stateless (no session yet). Local development identity per B-2. |
-| 4 | Frontend integration locally through the Angular dev proxy (no CORS). Staging e2e needs a real IdP **or** a non-public staging environment (see risk R-2). |
-| 9 | BFF for the web (`spring-boot-starter-security-oauth2-client`, Spring Session JDBC, `__Host-` cookie, CSRF), production IdP, threat-model review. |
+| 4 | Frontend integration locally through the Angular dev proxy (no CORS). Staging e2e needs the Entra External ID tenant set up early **or** a non-public staging environment (see risk R-2). |
+| 9 | BFF for the web (`spring-boot-starter-security-oauth2-client`, Spring Session JDBC, `__Host-` cookie, CSRF), Microsoft Entra External ID integration, threat-model review. |
 | 10 | Native PKCE flow; CORS allow-list for Capacitor origins if needed. |
 
 Rules that apply from the first secured endpoint:
@@ -394,7 +395,7 @@ Contract for `atlas-infra` (also in README):
 | ID | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|---|
 | R-1 | Spring Boot 4.x / Jackson 3 / Hibernate 7 ecosystem gaps (libraries not yet compatible, e.g. springdoc) | Medium | Medium | Verify each addition against Boot 4.1 before adding; time-boxed spikes in Phase 2 (BE-2.3); keep dependencies minimal |
-| R-2 | Phase 4 "e2e tests pass in staging" needs authentication, but the IdP is a Phase 9 decision | High | High | Decide B-1 before Phase 4, **or** keep staging non-public (private network/port-forward) until Phase 9; never enable the dev identity outside `local` |
+| R-2 | Phase 4 "e2e tests pass in staging" needs authentication, but the IdP integration is planned for Phase 9 (the IdP itself was decided on 2026-11-12, B-1) | High | High | Set up the Entra External ID tenant and resource-server configuration before Phase 4, **or** keep staging non-public (private network/port-forward) until Phase 9; never enable the dev identity outside `local` |
 | R-3 | Owner check forgotten in a new query → data leak between owners | Low (single user first) | High | Owner-scoped repository methods only, cross-owner tests per endpoint family, PR checklist item |
 | R-4 | Progress/dependency rules drift between backend and frontend | Medium | Medium | Backend returns derived values (progress, availability, reasons); frontend does not recalculate |
 | R-5 | Migration applied at start-up locks or fails during rollout | Low | High | Expand/contract, migration tests from previous version, small migrations; B-7 if migrations get long |
@@ -447,14 +448,14 @@ A-1…A-6 in [API-CONTRACT §14](../architecture/API-CONTRACT.md#14-open-decisio
 
 | ID | Decision | Recommended default | Trade-offs | Decide by |
 |---|---|---|---|---|
-| B-1 | Identity provider (§21.1) | Managed OIDC for deployed environments; Keycloak only as optional local test IdP (ADR-0005) | Managed: less operations, vendor terms/pricing to verify. Keycloak: control and parity, but another stateful workload to patch and back up | Before staging becomes reachable (R-2), at the latest Phase 9 |
+| B-1 | Identity provider (§21.1) | **Decided 2026-11-12: Microsoft Entra External ID** for deployed environments (free up to 50,000 MAU); provider-neutral configuration; Keycloak only as optional local test IdP (ADR-0005) | Managed: less operations; no SMS factor and no custom sign-in domain without Front Door. Azure AD B2C is closed to new customers. Keycloak: control and parity, but another stateful workload to patch and back up | Decided; tenant set up before staging becomes reachable (R-2), at the latest Phase 9 |
 | B-2 | Development identity before the IdP exists | Tests: `spring-security-test` JWT post-processors. Local manual/frontend work: a `local`-only development identity (fixed subject) that is rejected at start-up with any other profile. Optional: Keycloak in `atlas-infra/local` for realistic flows | Fast and simple, but the local flow differs from production until the BFF lands. Keycloak locally is realistic but heavier for daily work | Start of Phase 3 |
 | B-3 | Owner of goal-to-area assignment | `goals` owns `goal_ikigai_area` and references stable area keys ([DOMAIN-MODULES §1](../architecture/DOMAIN-MODULES.md#proposed-refinement-goal-to-area-assignment-is-owned-by-goals)) | Atomic goal creation, no cycle; deviates from the §11.3 wording (ikigai "goal-area assignments") | Phase 2 review |
 | B-4 | JPA annotations on domain entities or separate persistence models | JPA annotations on aggregate classes in `domain` (pragmatic); pure-Java calculators (progress, dependency graph) operate on plain value objects and have no JPA/Spring imports | Less mapping code; domain is not 100 % persistence-free. Separate models are purer but double the classes for a single-user app | Phase 3.0 |
 | B-5 | Event publication registry | Add `spring-modulith-starter-jpa` (tables created by Flyway) together with the first `@ApplicationModuleListener` whose loss would matter; until then only synchronous listeners | Extra tables and completed-event clean-up vs. silently lost asynchronous side effects | When the first async listener is proposed |
 | B-6 | OpenAPI approach | Code-first with springdoc + committed snapshot (ADR-0006, A-6) | Fast for one developer; contract-first gives stricter design review but needs generator tooling | Phase 2 review |
 | B-7 | Where migrations run | Application start-up (current) for the MVP | Simple, no extra Kubernetes objects; a slow migration delays readiness. A Job/Argo CD PreSync hook separates concerns and allows a separate migration user (D-4) but adds orchestration. Decided with `atlas-infra` | Phase 9 (earlier if a migration > 30 s appears) |
-| B-8 | Single-user vs multi-user (§21.12) | Multi-tenant-ready data model (owner everywhere), single-user operation: sign-up is restricted at the IdP (invite-only/disabled self-registration); no sharing features | Keeps future options open at low cost; restricting access at the IdP keeps the app free of user-management code | Phase 9 with B-1 |
+| B-8 | Single-user vs multi-user (§21.12) | Multi-tenant-ready data model (owner everywhere), single-user operation: sign-up is restricted at the IdP (Entra External ID user flow with `isSignUpAllowed: false`; the owner account is created by an admin); no sharing features | Keeps future options open at low cost; restricting access at the IdP keeps the app free of user-management code | Phase 9 with B-1 |
 | B-9 | Boilerplate tooling | Java records + hand-written mappers; no Lombok, no MapStruct | More explicit code; fewer build plugins and no annotation-processor coupling to new JDKs | Phase 3.0 |
 | B-10 | Onboarding financial-baseline step before the finance module exists (Phase 6) | Phase 3 onboarding has the steps `preferences` and `personal-context`; `financial-baseline` is defined as optional and shown as "available later" until Phase 6, when reopening onboarding lets the user complete it | Keeps Phase 3 small and in §18 order; first-run onboarding is incomplete until Phase 6. Alternative: pull the finance baseline tables forward into Phase 3 | Phase 2 review with PLAN-FRONTEND |
 | B-11 | Demo data ("exactly one sample Master's goal in demo mode", §20.2) | Backend seeding is off by default. A property `atlas.demo-data.enabled` (default `false`) creates the sample goal for the current owner through normal use cases; start-up fails if it is `true` with `prod`. Phase 2's sample stays in the frontend mock | Real API data in demos; one more guarded switch. Alternative: frontend-only demo mode, which cannot demo the backend | Phase 4 |
