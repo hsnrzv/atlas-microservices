@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- Build stage -------------------------------------------------------------------------------
-FROM eclipse-temurin:21-jdk-noble AS build
+FROM eclipse-temurin:25-jdk-noble AS build
 WORKDIR /workspace
 
 # Dependency layer: re-used until pom.xml or the Maven Wrapper changes.
@@ -15,7 +15,7 @@ RUN ./mvnw -B -DskipTests package \
     && java -Djarmode=tools -jar target/atlas-backend.jar extract --layers --launcher --destination target/extracted
 
 # ---- Runtime stage -----------------------------------------------------------------------------
-FROM eclipse-temurin:21-jre-noble AS runtime
+FROM eclipse-temurin:25-jre-noble AS runtime
 
 ARG VERSION=0.0.1-SNAPSHOT
 ARG REVISION=unknown
@@ -29,7 +29,7 @@ LABEL org.opencontainers.image.title="atlas-backend" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.created="${CREATED}" \
-      org.opencontainers.image.base.name="docker.io/library/eclipse-temurin:21-jre-noble"
+      org.opencontainers.image.base.name="docker.io/library/eclipse-temurin:25-jre-noble"
 
 # Fixed, non-root UID/GID so Kubernetes `runAsNonRoot`/`runAsUser: 10001` can be enforced.
 RUN groupadd --system --gid 10001 atlas \

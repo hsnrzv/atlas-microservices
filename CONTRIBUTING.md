@@ -32,7 +32,7 @@ Mark breaking API or schema changes with `!` (`feat(api)!: ...`) and a `BREAKING
 ## Local checks before opening a PR
 
 ```bash
-export JAVA_HOME=<path to JDK 21>
+export JAVA_HOME=<path to JDK 25>
 ./mvnw verify          # needs Docker for the Testcontainers integration tests
 ```
 

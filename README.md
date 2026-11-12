@@ -18,13 +18,13 @@ planned in [docs/plan/PLAN-BACKEND.md](docs/plan/PLAN-BACKEND.md).
 
 | Tool | Version | Notes |
 |---|---|---|
-| JDK | 21 (LTS) | `JAVA_HOME` must point to a JDK 21. A newer default `java` on the `PATH` is not used by `./mvnw` if `JAVA_HOME` is set. The build fails fast (Maven Enforcer) on Java < 21. |
+| JDK | 25 (LTS) | `JAVA_HOME` must point to a JDK 25 ([ADR-0008](docs/adr/0008-java-25-lts-runtime.md)). `./mvnw` uses `JAVA_HOME` before the `java` on the `PATH`. The build fails fast (Maven Enforcer) on Java < 25. |
 | Docker | Docker Desktop or Docker Engine with Compose v2 | Needed for the local database (`compose.yaml`) and for the Testcontainers integration tests. |
 | Maven | none | Use the Maven Wrapper (`./mvnw`, Maven 3.10.0). |
 
 ```bash
-# macOS example; adjust the path to your JDK 21
-export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+# macOS example; adjust the path to your JDK 25
+export JAVA_HOME=$(/usr/libexec/java_home -v 25)
 ./mvnw -v
 ```
 
@@ -99,8 +99,8 @@ Key runtime facts:
 
 ## Container image
 
-Multi-stage [`Dockerfile`](Dockerfile): build on `eclipse-temurin:21-jdk-noble`, run on
-`eclipse-temurin:21-jre-noble` as non-root UID/GID `10001`, with Spring Boot layered extraction.
+Multi-stage [`Dockerfile`](Dockerfile): build on `eclipse-temurin:25-jdk-noble`, run on
+`eclipse-temurin:25-jre-noble` as non-root UID/GID `10001`, with Spring Boot layered extraction.
 
 ```bash
 docker build -t atlas-backend:local \

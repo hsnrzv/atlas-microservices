@@ -1,6 +1,6 @@
 # ADR-0007: Java 21, Spring Boot 4.1 and the Maven Wrapper as the backend baseline
 
-- Status: Accepted
+- Status: Accepted; the Java 21 part is superseded by [ADR-0008](0008-java-25-lts-runtime.md) (Java 25 LTS)
 - Date: 2026-11-12
 - Deciders: @hsnrzv (owner)
 

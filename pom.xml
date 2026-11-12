@@ -21,7 +21,7 @@
 	</scm>
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 		<spring-modulith.version>2.1.1</spring-modulith.version>
 		<!-- Keep in sync with distributionUrl in .mvn/wrapper/maven-wrapper.properties -->
 		<maven.version.required>3.10.0</maven.version.required>

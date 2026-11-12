@@ -48,7 +48,7 @@ Security yet (shared contract, user decision 1).
 | Logging | ECS JSON on the console outside `local`; human-readable in `local` | `application*.yaml` |
 | Local run | `compose.yaml` (PostgreSQL only, LOCAL ONLY credentials `atlas`/`atlas`/`atlas`, named volume, health check, host port `${ATLAS_DB_PORT:-5432}`), started by `spring-boot-docker-compose` in profile `local` | `README.md` quick start |
 | Tests | `ModularityTests` (unit), `AtlasApplicationIT` (Testcontainers PostgreSQL, `@ServiceConnection`, skipped without Docker, mandatory in CI) | `./mvnw -B verify` |
-| Image | Multi-stage `Dockerfile`, layered jar (`-Djarmode=tools extract --layers --launcher`), runtime `eclipse-temurin:21-jre-noble`, UID/GID 10001, port 8080 | `docker build` + run against PostgreSQL |
+| Image | Multi-stage `Dockerfile`, layered jar (`-Djarmode=tools extract --layers --launcher`), runtime `eclipse-temurin:25-jre-noble`, UID/GID 10001, port 8080 | `docker build` + run against PostgreSQL |
 | CI | `backend-ci.yml` (verify, assert integration tests ran, reports on failure, dependency review on PRs) and `backend-container.yml` (buildx build without push + smoke test) | workflow files; not yet run on GitHub (nothing pushed) |
 | Hygiene | README, CONTRIBUTING, SECURITY, `.editorconfig`, `.gitattributes`, `.gitignore`, CODEOWNERS, PR template, Dependabot, THIRD-PARTY-NOTICES | repository root, `.github/` |
 
@@ -64,7 +64,7 @@ Security yet (shared contract, user decision 1).
 4. **Identity provider unknown until Phase 9** (§21.1). Phase 3 implements a provider-neutral JWT
    resource server that is tested with signed test tokens (ADR-0005).
 5. **No external integrations** (banks, brokers, FX rates, LLMs) in Phases 1–4 (§2, §7.3, §8).
-6. **Java 21 LTS and Spring Boot 4.1.x** stay the baseline (ADR-0007). Patch/minor updates arrive through
+6. **Java 25 LTS and Spring Boot 4.1.x** stay the baseline (ADR-0007, Java part superseded by ADR-0008). Patch/minor updates arrive through
    Dependabot PRs and must pass CI.
 7. **Data volume is small** (one user, hundreds of goals/nodes at most). Simplicity beats premature
    optimisation; collection endpoints are still paginated from the start (§11.5).
@@ -307,7 +307,7 @@ THIRD-PARTY-NOTICES in the same PR.
 
 | Not used | Reason |
 |---|---|
-| Lombok | Records cover DTOs/value objects; avoids annotation processing in a Java 21 code base (B-9) |
+| Lombok | Records cover DTOs/value objects; avoids annotation processing in a Java 25 code base (B-9) |
 | MapStruct | Few mappings per module; hand-written mappers are explicit and testable (B-9) |
 | H2 / in-memory DB | Tests use real PostgreSQL 18 (ADR-0003) |
 | Spring Cloud, service discovery, message brokers | One deployable (ADR-0002, §8.3) |
@@ -407,7 +407,7 @@ Contract for `atlas-infra` (also in README):
 
 **Phase 1 (met locally on 2026-11-12):**
 
-- `./mvnw -B verify` with JDK 21 passes: `ModularityTests` and `AtlasApplicationIT` green, the latter
+- `./mvnw -B verify` with JDK 25 passes (re-verified after the switch from JDK 21, ADR-0008): `ModularityTests` and `AtlasApplicationIT` green, the latter
   against `postgres:18.6-alpine`.
 - `atlas.flyway_schema_history` contains version `1` after start-up; `ddl-auto=validate` active.
 - `/actuator/health`, `/liveness`, `/readiness` return `200 {"status":"UP"}`; other actuator paths
@@ -468,7 +468,7 @@ cross-referencing from `atlas` `IMPLEMENTATION-ROADMAP.md`.
 
 ### Phase 1: foundations
 
-- [x] **BE-1.1** Scaffold from start.spring.io: Boot 4.1.2, Java 21, Maven Wrapper (Maven 3.10.0), trimmed
+- [x] **BE-1.1** Scaffold from start.spring.io: Boot 4.1.2, Java 21 (moved to Java 25 by ADR-0008), Maven Wrapper (Maven 3.10.0), trimmed
   POM, enforcer (Java/Maven version, dependency convergence).
 - [x] **BE-1.2** Configuration: common `application.yaml` (Flyway schema `atlas`, `validate`,
   `open-in-view=false`, Hikari, graceful shutdown, Problem Details, health probes, `health,info` only,

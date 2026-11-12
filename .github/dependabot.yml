@@ -47,7 +47,7 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(deps)"
-    # Stay on the Java 21 LTS line; a new Java major is an ADR decision, not a bot update.
+    # Stay on the Java 25 LTS line (ADR-0008); a new Java major is an ADR decision, not a bot update.
     ignore:
       - dependency-name: "eclipse-temurin"
         update-types: ["version-update:semver-major"]
