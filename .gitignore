@@ -1,0 +1,40 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IntelliJ IDEA (project files are personal; .idea/ is kept locally but never committed)
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse / STS / VS Code
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and local environment files (never commit secrets)
+*.log
+.env
+.env.*
+!.env.example

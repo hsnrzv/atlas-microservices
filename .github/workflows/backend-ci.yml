@@ -1,0 +1,78 @@
+name: backend-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege: jobs only read the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Maven verify (unit, modularity, Testcontainers IT)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21 (Temurin) with Maven cache
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Integration tests are skipped when Docker is missing; in CI that must never happen silently.
+      - name: Check Docker is available for Testcontainers
+        run: docker info --format 'Docker server {{.ServerVersion}}'
+
+      - name: Build and test
+        run: ./mvnw -B -ntp verify
+
+      - name: Assert integration tests ran
+        run: |
+          summary=target/failsafe-reports/failsafe-summary.xml
+          completed=$(sed -n 's:.*<completed>\([0-9]*\)</completed>.*:\1:p' "$summary")
+          skipped=$(sed -n 's:.*<skipped>\([0-9]*\)</skipped>.*:\1:p' "$summary")
+          echo "Integration tests: completed=${completed:-0} skipped=${skipped:-0}"
+          if [ "${completed:-0}" -eq 0 ] || [ "${skipped:-0}" -ne 0 ]; then
+            echo "::error::Testcontainers integration tests were skipped or did not run"
+            exit 1
+          fi
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # Requires the dependency graph; on private repositories it also requires GitHub Advanced Security.
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high

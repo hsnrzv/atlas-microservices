@@ -1,0 +1,14 @@
+# Developer machine profile: ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+# Starts compose.yaml (PostgreSQL 18, LOCAL ONLY credentials) and derives the datasource from it.
+spring:
+  docker:
+    compose:
+      enabled: true
+      # Starts compose.yaml on boot and runs `docker compose stop` on shutdown (data volume is kept).
+      lifecycle-management: start-and-stop
+
+logging:
+  structured:
+    format:
+      # Empty value disables structured logging -> human-readable console output.
+      console: ""

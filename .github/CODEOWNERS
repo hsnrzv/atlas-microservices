@@ -1,0 +1,7 @@
+# Default owner for everything in this repository.
+*                                   @hsnrzv
+
+# Schema migrations and architecture decisions need explicit owner review.
+/src/main/resources/db/migration/   @hsnrzv
+/docs/adr/                          @hsnrzv
+/.github/                           @hsnrzv
