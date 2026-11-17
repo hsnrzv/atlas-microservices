@@ -3,6 +3,7 @@
 - Status: **Phase 0 plan, Proposed**, awaiting owner review. **Phase 1 foundations delivered** on
   2026-11-12 (uncommitted, see [§14](#14-pr-sized-backlog-phases-14)).
 - Owner: @hsnrzv
+- Phase order and gates: [implementation roadmap](../implementation/roadmap.md).
 - Companion documents: [PLAN-DATABASE](PLAN-DATABASE.md),
   [DOMAIN-MODULES](../architecture/DOMAIN-MODULES.md), [API-CONTRACT](../architecture/API-CONTRACT.md),
   [ADR index](../adr/README.md).

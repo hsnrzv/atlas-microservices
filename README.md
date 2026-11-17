@@ -148,6 +148,7 @@ publishing to `ghcr.io/hsnrzv/atlas-backend` is planned for Phase 2 (BE-2.4 in
 ## Documentation
 
 - [Backend plan](docs/plan/PLAN-BACKEND.md) and [database plan](docs/plan/PLAN-DATABASE.md)
+- [Implementation roadmap](docs/implementation/roadmap.md) (phase order and gates)
 - [Domain modules and allowed dependencies](docs/architecture/DOMAIN-MODULES.md)
 - [API contract draft](docs/architecture/API-CONTRACT.md)
 - [Architecture Decision Records](docs/adr/README.md)
