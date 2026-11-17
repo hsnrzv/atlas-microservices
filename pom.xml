@@ -22,7 +22,7 @@
 
 	<properties>
 		<java.version>25</java.version>
-		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<spring-modulith.version>2.1.2</spring-modulith.version>
 		<!-- Keep in sync with distributionUrl in .mvn/wrapper/maven-wrapper.properties -->
 		<maven.version.required>3.10.0</maven.version.required>
 		<!-- Extended (not replaced) by surefire/failsafe argLine below; lets tools such as JaCoCo add agents later -->
