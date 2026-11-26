@@ -1,9 +1,10 @@
 name: backend-container
 
-# Phase 1: build and smoke-test the image on every PR and on main, WITHOUT pushing.
-# Publishing immutable images to ghcr.io/hsnrzv/atlas-backend (plus SBOM, provenance and image scanning,
-# then a PR to atlas-infra to bump the digest) is deferred to Phase 9 so that no registry credentials or
-# `packages: write` permission exist before the deployment path has been reviewed.
+# Builds, smoke-tests and scans the image on every PR and on main, WITHOUT pushing.
+# BE-1.13: Trivy image scan (fixable CRITICAL/HIGH fail; exceptions in .trivyignore) and a CycloneDX image SBOM.
+# Publishing immutable images to ghcr.io/hsnrzv/atlas-backend (provenance, then a PR to atlas-infra to bump the
+# digest) is BE-2.4 and follows atlas-infra ADR-0007, so no registry credentials or `packages: write` permission
+# exist before the deployment path has been reviewed.
 # See docs/plan/PLAN-BACKEND.md (backlog) and atlas-infra docs/plan/PLAN-INFRASTRUCTURE-CICD.md.
 
 on:
@@ -78,3 +79,36 @@ jobs:
       - name: Container logs
         if: always()
         run: docker logs atlas-smoke-app 2>&1 | tail -n 200 || true
+
+      # Trivy (Apache-2.0): same pinned action commit, scanner version and policy as atlas F2-11 (shared scanner,
+      # atlas-infra ADR-0007). Scans OS packages and the application jars. Fixable CRITICAL and HIGH findings fail
+      # the job; an accepted finding goes into .trivyignore with a reason and an expiry date.
+      - name: Image vulnerability scan (Trivy)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.76.2
+          image-ref: ${{ env.IMAGE }}
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
+          trivyignores: .trivyignore
+
+      - name: CycloneDX SBOM of the image (OS packages and jars)
+        if: ${{ !cancelled() }}
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.76.2
+          image-ref: ${{ env.IMAGE }}
+          format: cyclonedx
+          output: atlas-backend-image.cdx.json
+          skip-setup-trivy: true
+
+      - name: Upload image SBOM
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-image-sbom
+          path: atlas-backend-image.cdx.json
+          retention-days: 30
+          if-no-files-found: warn

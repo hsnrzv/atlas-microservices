@@ -71,6 +71,15 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
+      # CycloneDX SBOM of the application dependencies (BE-1.13), also packaged in the jar at META-INF/sbom/.
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-sbom
+          path: target/classes/META-INF/sbom/application.cdx.json
+          retention-days: 30
+          if-no-files-found: error
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v7

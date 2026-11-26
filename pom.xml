@@ -239,6 +239,13 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<!-- CycloneDX SBOM (BE-1.13). Execution and configuration come from spring-boot-starter-parent:
+				     target/classes/META-INF/sbom/application.cdx.json, packaged into the jar. The container image
+				     SBOM (OS packages + jars) is produced by Trivy in backend-container. -->
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+			</plugin>
 		</plugins>
 	</build>
 

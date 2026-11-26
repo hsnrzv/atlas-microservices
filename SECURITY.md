@@ -33,5 +33,8 @@ Only the latest commit on `main` is supported. There are no released versions ye
 - The container runs as a non-root user (UID 10001).
 - Dependabot updates dependencies, GitHub Actions and base images weekly; pull requests run GitHub
   dependency review.
+- Every build produces a CycloneDX SBOM (packaged in the jar at `META-INF/sbom/application.cdx.json`).
+  `backend-container` scans the image with Trivy and fails on fixable critical/high findings; an accepted
+  finding goes into [`.trivyignore`](.trivyignore) with a reason, the accepting PR and an expiry date.
 - Authentication (OIDC) and owner-level authorization are planned before any public deployment
   (see [ADR-0005](docs/adr/0005-authentication-provider-neutral-oidc.md)).
