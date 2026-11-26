@@ -496,7 +496,7 @@ cross-referencing from `atlas` `IMPLEMENTATION-ROADMAP.md`.
   (§19).
 - [ ] **BE-1.14** Owner actions on GitHub (not code): push the repository, enable dependency graph,
   Dependabot alerts, secret scanning with push protection, branch protection on `main` requiring
-  `backend-ci` and `backend-container`.
+  `backend-ci` and `backend-container`. Pushed to `origin/main` by 2026-11-26; settings and branch protection open.
 - [ ] **BE-1.15** First green CI run of both workflows on GitHub (depends on BE-1.14).
 
 ### Phase 2: contract alignment (frontend builds the mock-backed shell)

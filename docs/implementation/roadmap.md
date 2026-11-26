@@ -1,7 +1,8 @@
 # Implementation roadmap — atlas-backend
 
-- Status: **Proposed 2026-11-17**, awaiting owner approval. Phase 1 is delivered locally except BE-1.12…BE-1.15;
-  phases 2–4 have not started. No feature code exists yet (only `AtlasApplication`).
+- Status: **Proposed 2026-11-17**, awaiting owner approval. Phase 1 is delivered and pushed to `origin/main`
+  (2026-11-26) except BE-1.12…BE-1.15; phases 2–4 have not started. No feature code exists yet
+  (only `AtlasApplication`).
 - Purpose: set the order in which the backend is built, phase by phase, with an explicit gate between phases and the
   cross-repository hand-offs that unblock the frontend and infrastructure.
 - Maps the cross-repository phases P0–P11 in `atlas` `docs/plan/IMPLEMENTATION-ROADMAP.md` onto the existing backlog
@@ -36,8 +37,8 @@
 | BE-1.1…1.11 | Boot 4.1.2 scaffold (Java 25), profiles, compose PostgreSQL, Flyway V1, Modulith test, IT, Docker, CI | done 2026-11-12 (local) |
 | BE-1.12 | JaCoCo report in `verify`, uploaded by CI (no gate yet) | open |
 | BE-1.13 | CycloneDX SBOM + container vulnerability scan, fail on fixable critical/high | open; Trivy proposed (same as `atlas` F2-11), to be agreed with infra |
-| BE-1.14 | Owner: push, dependency graph, Dependabot alerts, secret scanning with push protection, branch protection | open (owner action); `origin/main` does not exist yet |
-| BE-1.15 | First green run of `backend-ci` and `backend-container` on GitHub | open; depends on BE-1.14 |
+| BE-1.14 | Owner: push, dependency graph, Dependabot alerts, secret scanning with push protection, branch protection | in progress (owner action): pushed to `origin/main` by 2026-11-26; repository settings and branch protection open |
+| BE-1.15 | First green run of `backend-ci` and `backend-container` on GitHub | open; `main` is pushed, first green run to be confirmed |
 
 **Gate 1:** both workflows green on GitHub; branch protection requires them; SBOM and scan run in CI.
 
