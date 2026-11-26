@@ -81,6 +81,7 @@ the permissive or weak-copyleft option applies to unmodified binary use.
 |---|---|---|---|
 | Apache Maven (via Maven Wrapper 3.3.4) | 3.10.0 | Apache-2.0 | Build |
 | Maven Enforcer / Surefire / Failsafe / Compiler plugins | 3.6.3 / 3.5.6 / 3.5.6 / 3.15.0 | Apache-2.0 | Build rules, tests |
+| JaCoCo (`jacoco-maven-plugin`, test agent) | 0.8.16 | EPL-2.0 | Coverage report in `verify`; the agent is attached to test JVMs only, never packaged |
 | `eclipse-temurin:25-jdk-noble`, `eclipse-temurin:25-jre-noble` | Java 25 (25.0.5 at build time) | OpenJDK: GPL-2.0 with Classpath Exception; image definitions: Apache-2.0 ([adoptium/containers](https://github.com/adoptium/containers)); Ubuntu 24.04 packages under their own licenses | Container build and runtime |
 | `postgres:18.6-alpine` | PostgreSQL 18.6 | PostgreSQL License; image definitions: MIT ([docker-library/postgres](https://github.com/docker-library/postgres)) | Local database, Testcontainers, CI smoke test |
 | `actions/checkout`, `actions/setup-java`, `actions/upload-artifact`, `actions/dependency-review-action` | v7, v6, v7, v5 | MIT | CI |

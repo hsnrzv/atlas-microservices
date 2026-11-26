@@ -295,7 +295,7 @@ THIRD-PARTY-NOTICES in the same PR.
 
 | Dependency | Phase | Purpose | Status (2026-11-12) |
 |---|---|---|---|
-| `jacoco-maven-plugin` | 1 follow-up | Coverage report (gate from Phase 3) | 0.8.16 on Central, EPL-2.0 (licence to re-check) |
+| `jacoco-maven-plugin` | 1 follow-up | Coverage report (gate from Phase 3) | **Added 2026-11-26 (BE-1.12):** 0.8.16, EPL-2.0 (build/test tool, not packaged) |
 | `cyclonedx-maven-plugin` | 1 follow-up | SBOM per build / image | 2.9.3 on Central, Apache-2.0 (to re-check) |
 | `spring-boot-starter-security-oauth2-resource-server` | 3 | JWT resource server | Boot-managed; the old `spring-boot-starter-oauth2-resource-server` name is deprecated in Boot 4.1.2 |
 | `spring-boot-starter-security-test` | 3 | Security test support (JWT post-processors) | Boot-managed, verified present for 4.1.2 |
@@ -490,7 +490,9 @@ cross-referencing from `atlas` `IMPLEMENTATION-ROADMAP.md`.
   CODEOWNERS, PR template, Dependabot) and THIRD-PARTY-NOTICES.
 - [x] **BE-1.11** Phase 0 documents: this plan, PLAN-DATABASE, DOMAIN-MODULES, API-CONTRACT,
   ADR-0001…0007.
-- [ ] **BE-1.12** JaCoCo report in `verify`, uploaded by CI (no gate yet).
+- [x] **BE-1.12** JaCoCo report in `verify`, uploaded by CI (no gate yet). Done 2026-11-26: JaCoCo 0.8.16,
+  unit and integration data merged into `target/site/jacoco/`; `backend-ci` uploads it (`backend-coverage`) and
+  writes a line/branch summary to the job summary.
 - [ ] **BE-1.13** Supply chain: CycloneDX SBOM in the build and image workflow; container vulnerability
   scan (tool and licence chosen with `atlas-infra`); fail on critical/high without documented exception
   (§19).

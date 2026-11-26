@@ -49,6 +49,28 @@ jobs:
             exit 1
           fi
 
+      # Report only (BE-1.12); coverage thresholds are enforced from Phase 3 (BE-3.06).
+      - name: Coverage summary (unit + integration)
+        if: ${{ !cancelled() && hashFiles('target/site/jacoco/jacoco.csv') != '' }}
+        run: |
+          awk -F, 'function row(name, c, m) {
+              printf "| %s | %d | %d | %s |\n", name, c, c + m, (c + m) ? sprintf("%.1f", 100 * c / (c + m)) : "n/a"
+            }
+            NR > 1 { bm += $6; bc += $7; lm += $8; lc += $9 }
+            END {
+              printf "### Coverage (JaCoCo, unit + integration)\n\n| Counter | Covered | Total | %% |\n|---|---|---|---|\n"
+              row("Lines", lc, lm); row("Branches", bc, bm)
+            }' target/site/jacoco/jacoco.csv >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-coverage
+          path: target/site/jacoco/
+          retention-days: 14
+          if-no-files-found: warn
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v7

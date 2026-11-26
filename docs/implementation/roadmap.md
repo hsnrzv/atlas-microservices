@@ -35,7 +35,7 @@
 | ID | Item | Status |
 |---|---|---|
 | BE-1.1…1.11 | Boot 4.1.2 scaffold (Java 25), profiles, compose PostgreSQL, Flyway V1, Modulith test, IT, Docker, CI | done 2026-11-12 (local) |
-| BE-1.12 | JaCoCo report in `verify`, uploaded by CI (no gate yet) | open |
+| BE-1.12 | JaCoCo report in `verify`, uploaded by CI (no gate yet) | done 2026-11-26 (local; CI run pending BE-1.15) |
 | BE-1.13 | CycloneDX SBOM + container vulnerability scan, fail on fixable critical/high | open; Trivy proposed (same as `atlas` F2-11), to be agreed with infra |
 | BE-1.14 | Owner: push, dependency graph, Dependabot alerts, secret scanning with push protection, branch protection | in progress (owner action): pushed to `origin/main` by 2026-11-26; repository settings and branch protection open |
 | BE-1.15 | First green run of `backend-ci` and `backend-container` on GitHub | open; `main` is pushed, first green run to be confirmed |
