@@ -509,6 +509,9 @@ Backup (owned by `atlas-infra`, §13.3, §21.11). Database-side requirements:
 
 ## 12. Open decisions
 
+All nine were confirmed by the owner on 2026-11-27 (Phase 2 review, DB-2.1): the recommended default is the
+decision. The heading is kept for stable links.
+
 | ID | Decision | Recommended default | Trade-offs |
 |---|---|---|---|
 | D-1 | Schema strategy (§21.5) | One schema `atlas`, module-prefixed tables, no cross-module FKs except owner (ADR-0004) | Simple operations and one Flyway history; no per-module DB privileges; dangling logical references possible (mitigated by listeners and tests) |
@@ -595,8 +598,8 @@ IDs continue the PLAN-BACKEND backlog (database items are part of the same PRs w
 
 ### Phase 2
 
-- [ ] **DB-2.1** Owner review of D-1…D-9 (ADR-0004 to Accepted or revised). ADR-0004 (D-1) accepted by the owner
-  2026-11-27; D-2…D-9 still to be confirmed, recommended defaults apply meanwhile (checklist in [phase-2-contract-review.md §5](../implementation/phase-2-contract-review.md#5-owner-review-package-be-22-db-21)).
+- [x] **DB-2.1** Owner review of D-1…D-9 (ADR-0004 to Accepted or revised). Done 2026-11-27: ADR-0004 (D-1)
+  accepted and D-2…D-9 confirmed by the owner with their recommended defaults (checklist in [phase-2-contract-review.md §5](../implementation/phase-2-contract-review.md#5-owner-review-package-be-22-db-21)).
 - [x] **DB-2.2** Agree enum value lists with PLAN-FRONTEND (priority scale, relationship status list,
   expense categories, onboarding step keys). Done 2026-11-27
   ([phase-2-contract-review.md §3](../implementation/phase-2-contract-review.md#3-enum-value-lists-db-22));
