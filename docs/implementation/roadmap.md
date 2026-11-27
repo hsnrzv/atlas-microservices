@@ -50,7 +50,7 @@ Runs in parallel with the frontend's mock-backed shell (already delivered in `at
 |---|---|---|
 | BE-2.1 | Review API-CONTRACT §9.1–§9.7 against the delivered frontend ports and FQ-1…FQ-22; resolve A-1…A-6 | open; the frontend ports and FQ list are ready for review |
 | BE-2.2 | Owner review of ADR-0004, ADR-0005, ADR-0006, B-1…B-13 and D-1…D-9 | open (owner) |
-| BE-2.3 | Spike (≤ 1 day, throwaway): springdoc 3.x with Boot 4.1/Jackson 3; JWT `audiences` | open |
+| BE-2.3 | Spike (≤ 1 day, throwaway): springdoc 3.x with Boot 4.2/Jackson 3; JWT `audiences` | open |
 | BE-2.4 | Publish `main-<sha>` to GHCR (provenance, SBOM, scan) and open the bump PR to `atlas-infra` | blocked: `atlas-infra` ADR-0007 is Proposed (SBOM and scan ready since BE-1.13) |
 
 **Gate 2:** ADR-0004/0005/0006 accepted or revised; A-1…A-6 resolved and each FQ answered or deferred to a phase;
@@ -151,6 +151,6 @@ See PLAN-BACKEND §11 for the full list. The ones that drive this order:
 
 - **R-2 (High/High):** staging e2e needs authentication before the Phase 9 IdP work. Decide the staging access
   model at Gate 3 at the latest.
-- **R-1:** Boot 4.1 / Jackson 3 ecosystem gaps (springdoc). BE-2.3 de-risks before BE-3.05.
+- **R-1:** Boot 4.x / Jackson 3 ecosystem gaps (springdoc). BE-2.3 de-risks before BE-3.05.
 - **R-7:** Testcontainers ITs skipped without Docker. CI asserts the IT reports exist.
 - **R-8:** over-engineering for one user. Gates and the PR-sized backlog keep scope tight.

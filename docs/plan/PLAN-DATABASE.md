@@ -49,8 +49,8 @@
 | Item | Value (verified 2026-11-12) | Notes |
 |---|---|---|
 | PostgreSQL | **18**; image `postgres:18.6-alpine` locally, in Testcontainers and in CI | Latest 18.x patch on postgresql.org and Docker Hub on 2026-11-12 was 18.6; re-check per phase (Dependabot updates the Compose tag; majors are ignored) |
-| Flyway | 12.4.0 (`spring-boot-starter-flyway` + `flyway-database-postgresql`) | Managed by Spring Boot 4.1.2 |
-| JDBC driver | `org.postgresql:postgresql` 42.7.14 | Managed by Spring Boot 4.1.2 |
+| Flyway | 12.11.0 (`spring-boot-starter-flyway` + `flyway-database-postgresql`) | Managed by Spring Boot 4.2.0 |
+| JDBC driver | `org.postgresql:postgresql` 42.7.14 | Managed by Spring Boot 4.2.0 |
 | ORM | Hibernate ORM 7.4.13.Final via Spring Data JPA, `ddl-auto=validate` | Hibernate never changes the schema |
 | Pool | HikariCP 7.0.2, `maximum-pool-size: 10`, `minimum-idle: 2` | `application.yaml` |
 | Extensions | **none** | `uuidv7()` is built into PostgreSQL 18 (verified). No `pgcrypto`, `pg_trgm` or `uuid-ossp` needed; a later extension needs a PR that checks availability on the chosen hosting service |

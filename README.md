@@ -20,7 +20,7 @@ planned in [docs/plan/PLAN-BACKEND.md](docs/plan/PLAN-BACKEND.md).
 |---|---|---|
 | JDK | 25 (LTS) | `JAVA_HOME` must point to a JDK 25 ([ADR-0008](docs/adr/0008-java-25-lts-runtime.md)). `./mvnw` uses `JAVA_HOME` before the `java` on the `PATH`. The build fails fast (Maven Enforcer) on Java < 25. |
 | Docker | Docker Desktop or Docker Engine with Compose v2 | Needed for the local database (`compose.yaml`) and for the Testcontainers integration tests. |
-| Maven | none | Use the Maven Wrapper (`./mvnw`, Maven 3.10.0). |
+| Maven | none | Use the Maven Wrapper (`./mvnw`, Maven 3.10.1). |
 
 ```bash
 # macOS example; adjust the path to your JDK 25
@@ -133,7 +133,7 @@ publishing to `ghcr.io/hsnrzv/atlas-backend` is planned for Phase 2 (BE-2.4 in
 │   ├── workflows/backend-ci.yml         # ./mvnw verify (+ Testcontainers), coverage report, SBOM, dependency review on PRs
 │   ├── workflows/backend-container.yml  # docker build + smoke test + Trivy scan and image SBOM, no push (publishing: Phase 2)
 │   ├── CODEOWNERS, dependabot.yml, pull_request_template.md
-├── .mvn/wrapper/                        # Maven Wrapper configuration (Maven 3.10.0)
+├── .mvn/wrapper/                        # Maven Wrapper configuration (Maven 3.10.1)
 ├── docs/
 │   ├── adr/                             # Architecture Decision Records (this repository)
 │   ├── architecture/                    # DOMAIN-MODULES.md, API-CONTRACT.md

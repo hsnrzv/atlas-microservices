@@ -48,6 +48,16 @@ Verified on 2026-11-12:
   Dependabot update, because the Docker ecosystem ignores Temurin major updates.
 - The Spring Boot 4.1 support window means a planned upgrade to the next minor within roughly a year.
 
+## Addendum 2026-11-27: Spring Boot 4.2.0, Maven 3.10.1
+
+The platform moved to **Spring Boot 4.2.0** and **Spring Modulith 2.2.0** (replacing Dependabot PR #3),
+and the wrapper moved to **Maven 3.10.1** with Enforcer `requireMavenVersion [3.10.1,)` (replacing
+Dependabot PR #2). Boot 4.2.0 manages Spring Framework 7.1.0, Spring Security 7.2.0, Hibernate ORM
+7.4.15.Final, HikariCP 7.1.0, Flyway 12.11.0, Testcontainers 2.0.5, JUnit Jupiter 6.1.3 and Jackson
+3.1.8. `./mvnw verify` (unit, modularity, Testcontainers ITs, dependency convergence) passed unchanged.
+Java 25 (ADR-0008) and the rest of this decision stay as they are. The 4.2 support window is to be
+re-checked on spring.io before release planning.
+
 ## Alternatives considered
 
 - **Java 25 LTS now:** newer language/runtime features, but the spec and contract fix Java 21, and

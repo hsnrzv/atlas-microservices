@@ -39,10 +39,10 @@ Security yet (shared contract, user decision 1).
 
 | Area | Delivered | Evidence |
 |---|---|---|
-| Scaffold | Spring Boot **4.1.2**, Java **25** (scaffolded on 21, moved by [ADR-0008](../adr/0008-java-25-lts-runtime.md)), Maven Wrapper 3.3.4 (Maven **3.10.0** from Maven Central), group `dev.myatlas`, artifact `atlas-backend`, single class `dev.myatlas.AtlasApplication` | `pom.xml`, `mvnw`, `.mvn/wrapper/maven-wrapper.properties` |
-| Build rules | `maven-enforcer-plugin` 3.6.3: Java ≥ 25 (`java.version`), Maven ≥ 3.10.0, dependency convergence | `./mvnw -B verify` |
-| Modularity | Spring Modulith **2.1.1**; `ModularityTests` runs `ApplicationModules.verify()` and writes module docs to `target/spring-modulith-docs/` | `src/test/java/dev/myatlas/ModularityTests.java` |
-| Database | PostgreSQL **18** (`postgres:18.6-alpine`), Flyway 12.4.0 with schema `atlas`, `V1__baseline.sql` (schema comment, no tables), Hibernate `ddl-auto=validate` | `src/main/resources/db/migration/` |
+| Scaffold | Spring Boot **4.2.0** (scaffolded on 4.1.2), Java **25** (scaffolded on 21, moved by [ADR-0008](../adr/0008-java-25-lts-runtime.md)), Maven Wrapper 3.3.4 (Maven **3.10.1** from Maven Central), group `dev.myatlas`, artifact `atlas-backend`, single class `dev.myatlas.AtlasApplication` | `pom.xml`, `mvnw`, `.mvn/wrapper/maven-wrapper.properties` |
+| Build rules | `maven-enforcer-plugin` 3.6.3: Java ≥ 25 (`java.version`), Maven ≥ 3.10.1, dependency convergence | `./mvnw -B verify` |
+| Modularity | Spring Modulith **2.2.0**; `ModularityTests` runs `ApplicationModules.verify()` and writes module docs to `target/spring-modulith-docs/` | `src/test/java/dev/myatlas/ModularityTests.java` |
+| Database | PostgreSQL **18** (`postgres:18.6-alpine`), Flyway 12.11.0 with schema `atlas`, `V1__baseline.sql` (schema comment, no tables), Hibernate `ddl-auto=validate` | `src/main/resources/db/migration/` |
 | Configuration | `application.yaml` (common), `application-local.yaml` (plain-text logs, Docker Compose on). No `dev`/`staging`/`prod` files: these environments are configured only through environment variables | `src/main/resources/` |
 | Health | `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness`, `/actuator/info`; nothing else exposed; no health details | `AtlasApplicationIT` |
 | Errors | Spring MVC Problem Details enabled (`application/problem+json` for framework errors) | `AtlasApplicationIT` |
@@ -66,7 +66,7 @@ Security yet (shared contract, user decision 1).
    Phase 3 still implements a provider-neutral JWT resource server that is tested with signed test tokens
    (ADR-0005); no provider SDK.
 5. **No external integrations** (banks, brokers, FX rates, LLMs) in Phases 1–4 (§2, §7.3, §8).
-6. **Java 25 LTS and Spring Boot 4.1.x** stay the baseline (ADR-0007, Java part superseded by ADR-0008). Patch/minor updates arrive through
+6. **Java 25 LTS and Spring Boot 4.x (currently 4.2)** stay the baseline (ADR-0007, Java part superseded by ADR-0008). Patch/minor updates arrive through
    Dependabot PRs and must pass CI.
 7. **Data volume is small** (one user, hundreds of goals/nodes at most). Simplicity beats premature
    optimisation; collection endpoints are still paginated from the start (§11.5).
@@ -271,37 +271,37 @@ or moved into `shared` (decided when created; `ModularityTests` will show it).
 
 ### 6.1 Current (Phase 1)
 
-Managed by `spring-boot-starter-parent` 4.1.2 and `spring-modulith-bom` 2.1.1 (versions as resolved on
-2026-11-12; licences in [THIRD-PARTY-NOTICES](../../THIRD-PARTY-NOTICES.md)).
+Managed by `spring-boot-starter-parent` 4.2.0 and `spring-modulith-bom` 2.2.0 (versions as resolved on
+2026-11-27; licences in [THIRD-PARTY-NOTICES](../../THIRD-PARTY-NOTICES.md)).
 
 | Dependency | Version | Scope |
 |---|---|---|
-| `spring-boot-starter-webmvc` (Spring Framework 7.0.10, Tomcat 11.0.27, Jackson 3.1.7) | 4.1.2 | compile |
-| `spring-boot-starter-actuator` | 4.1.2 | compile |
-| `spring-boot-starter-validation` | 4.1.2 | compile |
-| `spring-boot-starter-data-jpa` (Hibernate ORM 7.4.13.Final, HikariCP 7.0.2) | 4.1.2 | compile |
-| `spring-boot-starter-flyway` + `flyway-database-postgresql` | 4.1.2 / 12.4.0 | compile |
-| `spring-modulith-starter-core` | 2.1.1 | compile |
+| `spring-boot-starter-webmvc` (Spring Framework 7.1.0, Tomcat 11.0.27, Jackson 3.1.8) | 4.2.0 | compile |
+| `spring-boot-starter-actuator` | 4.2.0 | compile |
+| `spring-boot-starter-validation` | 4.2.0 | compile |
+| `spring-boot-starter-data-jpa` (Hibernate ORM 7.4.15.Final, HikariCP 7.1.0) | 4.2.0 | compile |
+| `spring-boot-starter-flyway` + `flyway-database-postgresql` | 4.2.0 / 12.11.0 | compile |
+| `spring-modulith-starter-core` | 2.2.0 | compile |
 | `org.postgresql:postgresql` | 42.7.14 | runtime |
-| `spring-boot-docker-compose` | 4.1.2 | runtime, optional (excluded from the jar) |
-| `spring-boot-starter-webmvc-test` (JUnit 6.0.3, Mockito 5.23.0, AssertJ) | 4.1.2 | test |
-| `spring-boot-testcontainers`, `testcontainers-junit-jupiter`, `testcontainers-postgresql` | 4.1.2 / 2.0.5 | test |
-| `spring-modulith-starter-test` | 2.1.1 | test |
+| `spring-boot-docker-compose` | 4.2.0 | runtime, optional (excluded from the jar) |
+| `spring-boot-starter-webmvc-test` (JUnit 6.1.3, Mockito 5.24.0, AssertJ) | 4.2.0 | test |
+| `spring-boot-testcontainers`, `testcontainers-junit-jupiter`, `testcontainers-postgresql` | 4.2.0 / 2.0.5 | test |
+| `spring-modulith-starter-test` | 2.2.0 | test |
 
 ### 6.2 Planned additions
 
-All versions must be re-verified on Maven Central and against Boot 4.1 when added; licences go into
+All versions must be re-verified on Maven Central and against the current Boot version when added; licences go into
 THIRD-PARTY-NOTICES in the same PR.
 
 | Dependency | Phase | Purpose | Status (2026-11-12) |
 |---|---|---|---|
 | `jacoco-maven-plugin` | 1 follow-up | Coverage report (gate from Phase 3) | **Added 2026-11-26 (BE-1.12):** 0.8.16, EPL-2.0 (build/test tool, not packaged) |
-| `cyclonedx-maven-plugin` | 1 follow-up | SBOM per build / image | **Added 2026-11-26 (BE-1.13):** 2.9.3 (managed by Boot 4.1.2, which also configures the execution), Apache-2.0 |
-| `spring-boot-starter-security-oauth2-resource-server` | 3 | JWT resource server | Boot-managed; the old `spring-boot-starter-oauth2-resource-server` name is deprecated in Boot 4.1.2 |
-| `spring-boot-starter-security-test` | 3 | Security test support (JWT post-processors) | Boot-managed, verified present for 4.1.2 |
+| `cyclonedx-maven-plugin` | 1 follow-up | SBOM per build / image | **Added 2026-11-26 (BE-1.13):** 2.9.3 (managed by Boot 4.2.0, which also configures the execution), Apache-2.0 |
+| `spring-boot-starter-security-oauth2-resource-server` | 3 | JWT resource server | Boot-managed; the old `spring-boot-starter-oauth2-resource-server` name is deprecated since Boot 4.1 |
+| `spring-boot-starter-security-test` | 3 | Security test support (JWT post-processors) | Boot-managed, verified present for 4.1.2 (re-check on 4.2.0 when added) |
 | `springdoc-openapi-starter-webmvc-api` | 3 | Code-first OpenAPI (ADR-0006) | 3.2.0, built against Boot 4.1.2, Apache-2.0 |
 | `spring-boot-configuration-processor` | 3 | Metadata for `atlas.*` properties | Boot-managed |
-| `spring-modulith-starter-jpa` | 3 or 6 (B-5) | Event publication registry | 2.1.1 present on Central |
+| `spring-modulith-starter-jpa` | 3 or 6 (B-5) | Event publication registry | managed by `spring-modulith-bom` 2.2.0 |
 | `spring-boot-starter-security-oauth2-client`, `spring-boot-starter-session-jdbc` | 9 | Web BFF (ADR-0005) | Boot-managed |
 | `spring-boot-starter-opentelemetry` or Micrometer registry | 9 | Tracing/metrics export | Boot-managed; exporter chosen with `atlas-infra` |
 
@@ -396,7 +396,7 @@ Contract for `atlas-infra` (also in README):
 
 | ID | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|---|
-| R-1 | Spring Boot 4.x / Jackson 3 / Hibernate 7 ecosystem gaps (libraries not yet compatible, e.g. springdoc) | Medium | Medium | Verify each addition against Boot 4.1 before adding; time-boxed spikes in Phase 2 (BE-2.3); keep dependencies minimal |
+| R-1 | Spring Boot 4.x / Jackson 3 / Hibernate 7 ecosystem gaps (libraries not yet compatible, e.g. springdoc) | Medium | Medium | Verify each addition against the current Boot version before adding; time-boxed spikes in Phase 2 (BE-2.3); keep dependencies minimal |
 | R-2 | Phase 4 "e2e tests pass in staging" needs authentication, but the IdP integration is planned for Phase 9 (the IdP itself was decided on 2026-11-12, B-1) | High | High | Set up the Entra External ID tenant and resource-server configuration before Phase 4, **or** keep staging non-public (private network/port-forward) until Phase 9; never enable the dev identity outside `local` |
 | R-3 | Owner check forgotten in a new query → data leak between owners | Low (single user first) | High | Owner-scoped repository methods only, cross-owner tests per endpoint family, PR checklist item |
 | R-4 | Progress/dependency rules drift between backend and frontend | Medium | Medium | Backend returns derived values (progress, availability, reasons); frontend does not recalculate |
@@ -513,7 +513,7 @@ No backend feature code. The backend side of Phase 2 makes Phase 3 unambiguous.
   PLAN-FRONTEND (goal, node tree, focus view, progress, reward, dashboard DTOs); resolve A-1…A-6.
 - [ ] **BE-2.2** Owner review of ADR-0004, ADR-0005, ADR-0006 and decisions B-1…B-13, D-1…D-9; update
   statuses to Accepted or revise.
-- [ ] **BE-2.3** Time-boxed spike (throwaway branch, ≤ 1 day): springdoc 3.x with Boot 4.1/Jackson 3 for
+- [ ] **BE-2.3** Time-boxed spike (throwaway branch, ≤ 1 day): springdoc 3.x with Boot 4.2/Jackson 3 for
   records with `Money` (string amount) and `PlannedDate`; JWT resource server with
   `audiences`; report findings in ADR-0006/0005.
 - [ ] **BE-2.4** `backend-container.yml` publishes `main-<sha>` to GHCR on `main` (OIDC `GITHUB_TOKEN`
