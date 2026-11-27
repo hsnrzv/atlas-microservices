@@ -77,7 +77,7 @@
 
 ## 5. Ownership and schema strategy
 
-Proposed in ADR-0004 (open decision D-1): **one schema `atlas`, module-prefixed tables, no cross-module
+Accepted in ADR-0004 (decision D-1, 2026-11-27): **one schema `atlas`, module-prefixed tables, no cross-module
 FKs except `owner_id` → `profile_app_user`.**
 
 | Module | Prefix | Tables (MVP) | Phase |
@@ -144,7 +144,7 @@ Common columns (`created_at`, `updated_at`, `version`) are omitted unless releva
 |---|---|---|
 | `profile_app_user` | `id` (= `owner_id` everywhere), `issuer VARCHAR(255)`, `subject VARCHAR(255)`, `display_name VARCHAR(100) NULL`, audit columns | `uq_profile_app_user_issuer_subject (issuer, subject)`. Created just-in-time on the first authenticated request. No e-mail or name copied from the token unless a feature needs it. |
 | `profile_preferences` | PK/FK `owner_id` (CASCADE inside module), `locale VARCHAR(35)` (BCP 47), `timezone VARCHAR(64)` (IANA), `currency VARCHAR(3)`, `week_start VARCHAR(9)`, `measurement_system VARCHAR(8)` (`METRIC`/`IMPERIAL`), `theme VARCHAR(6)` (`SYSTEM`/`LIGHT`/`DARK`) | Checks for the enum columns and currency format; locale/timezone validated in the application (Java `Locale`/`ZoneId`). Defaults from the device are suggestions (§6.1); EUR is the initial currency default. Notification preferences are added when notifications exist. |
-| `profile_personal_context` | PK/FK `owner_id`, `height_value NUMERIC(5,1)`, `height_unit` (`CM`/`IN`), `weight_value NUMERIC(5,1)`, `weight_unit` (`KG`/`LB`), `relationship_status VARCHAR(32) NULL` | Value and unit both null or both set; values > 0. All columns optional (§6.1). Relationship status values are a neutral, editable list agreed with PLAN-FRONTEND. |
+| `profile_personal_context` | PK/FK `owner_id`, `height_value NUMERIC(5,1)`, `height_unit` (`CM`/`IN`), `weight_value NUMERIC(5,1)`, `weight_unit` (`KG`/`LB`), `relationship_status VARCHAR(32) NULL` | Value and unit both null or both set; values > 0. All columns optional (§6.1). Relationship status values (agreed in DB-2.2, extensible): `SINGLE`, `IN_RELATIONSHIP`, `MARRIED_OR_CIVIL_PARTNERSHIP`, `SEPARATED_OR_DIVORCED`, `WIDOWED`, `OTHER`; `NULL` = not given. |
 | `profile_baseline_snapshot` | `id`, FK owner, `captured_at TIMESTAMPTZ`, `reason VARCHAR(24)` (`ONBOARDING_COMPLETED`, `PROFILE_CHANGED`), `schema_version SMALLINT`, `payload JSONB` | Append-only; `ix_profile_baseline_snapshot_owner_captured (owner_id, captured_at DESC)`. Holds preferences + personal context at that time (D-7). |
 
 The aggregate root is `profile_app_user`; `PUT /api/v1/profile` updates preferences and personal
@@ -155,19 +155,19 @@ context under the root's `version`.
 | Table | Key columns | Constraints and indexes |
 |---|---|---|
 | `onboarding_progress` | PK/FK `owner_id` (FK owner), `status VARCHAR(12)` (`NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`), `completed_at`, `reopened_at`, audit columns | `ck`: `completed_at` set iff `status = 'COMPLETED'`. |
-| `onboarding_step` | PK (`owner_id`, `step_key VARCHAR(40)`), FK → `onboarding_progress` CASCADE, `status VARCHAR(12)` (`NOT_STARTED`, `COMPLETED`, `SKIPPED`), `updated_at` | `ck_onboarding_step_key CHECK (step_key ~ '^[a-z][a-z0-9-]*$')`; the list of valid keys (`preferences`, `personal-context`, `financial-baseline`) lives in code because it grows with modules. Step **data** is stored by the owning module, not here. |
+| `onboarding_step` | PK (`owner_id`, `step_key VARCHAR(40)`), FK → `onboarding_progress` CASCADE, `status VARCHAR(12)` (`NOT_STARTED`, `COMPLETED`, `SKIPPED`), `updated_at` | `ck_onboarding_step_key CHECK (step_key ~ '^[a-z][a-z0-9-]*$')`; the list of valid keys (`areas`, `preferences`, `personal-context`, `financial-baseline`; agreed in DB-2.2) lives in code because it grows with modules. Step **data** is stored by the owning module, not here. |
 
 **ikigai**
 
 | Table | Key columns | Constraints and indexes |
 |---|---|---|
-| `ikigai_area` | PK (`owner_id`, `area_key VARCHAR(16)`), FK owner, `label VARCHAR(60) NULL` (null = not customised), `color_token VARCHAR(40) NULL` (null = default token), `sort_order SMALLINT`, `hidden BOOLEAN`, audit columns | `ck_ikigai_area_key` = the 7 canonical keys (`CAREER`, `FINANCE`, `HEALTH`, `LOVE`, `PASSION`, `FRIENDSHIP`, `FAMILY`). Rows are created lazily per owner (`INSERT … ON CONFLICT DO NOTHING`). When `label` is null, the API returns the canonical default label; localisation of default labels is coordinated with PLAN-FRONTEND. Keys are never renamed. |
+| `ikigai_area` | PK (`owner_id`, `area_key VARCHAR(16)`), FK owner, `label VARCHAR(60) NULL` (null = not customised), `color_token VARCHAR(40) NULL` (null = default token), `sort_order SMALLINT`, `hidden BOOLEAN`, `focused BOOLEAN NOT NULL DEFAULT false` (focus Life Dimension, set by the onboarding step `areas`, FQ-17), audit columns | `ck_ikigai_area_key` = the 7 canonical keys (`CAREER`, `FINANCE`, `HEALTH`, `LOVE`, `PASSION`, `FRIENDSHIP`, `FAMILY`). Rows are created lazily per owner (`INSERT … ON CONFLICT DO NOTHING`). When `label` is null, the API returns the canonical default label; localisation of default labels is coordinated with PLAN-FRONTEND. Keys are never renamed. |
 
 **goals** (DDL sketch for the central tables in [§6.4](#64-validated-ddl-sketch-goals))
 
 | Table | Key columns | Constraints and indexes |
 |---|---|---|
-| `goal` | `id`, FK owner, `title`, `outcome`, `description`, `status` (`DRAFT`, `ACTIVE`, `PAUSED`, `COMPLETED`, `ARCHIVED`), `status_before_archive` (for restore), `priority` (`LOW`/`MEDIUM`/`HIGH`, proposed), `start_date`(+precision), `target_date`(+precision), `expected_weekly_effort_minutes`, `progress_policy` (`DERIVED`/`MANUAL`), `manual_progress_percent NUMERIC(4,1)`, `completed_at`, `archived_at`, audit columns | `uq_goal_owner_id_id (owner_id, id)` for same-owner composite FKs; `archived_at` iff `ARCHIVED`; date order; precision normalisation; `ix_goal_owner_status`, `ix_goal_owner_target_date`. Free-text filter `q` uses `ILIKE` on the owner's goals (small data, no extension). |
+| `goal` | `id`, FK owner, `title`, `outcome`, `description`, `status` (`DRAFT`, `ACTIVE`, `PAUSED`, `COMPLETED`, `ARCHIVED`), `status_before_archive` (for restore), `priority` (`LOW`/`MEDIUM`/`HIGH`, agreed in DB-2.2; `NULL` = not set), `start_date`(+precision), `target_date`(+precision), `expected_weekly_effort_minutes`, `progress_policy` (`DERIVED`/`MANUAL`), `manual_progress_percent NUMERIC(4,1)`, `completed_at`, `archived_at`, audit columns | `uq_goal_owner_id_id (owner_id, id)` for same-owner composite FKs; `archived_at` iff `ARCHIVED`; date order; precision normalisation; `ix_goal_owner_status`, `ix_goal_owner_target_date`. Free-text filter `q` uses `ILIKE` on the owner's goals (small data, no extension). |
 | `goal_ikigai_area` | PK (`goal_id`, `area_key`), FK goal CASCADE, `role` (`PRIMARY`/`SECONDARY`), `weight NUMERIC(4,3) NULL` (0 < w ≤ 1, optional contribution weight) | `ux_goal_ikigai_area_primary` (one primary per goal, partial unique index); `ix_goal_ikigai_area_key (area_key, goal_id)` for the `area` filter. |
 | `goal_node` | `id`, `goal_id` FK CASCADE, `parent_id NULL`, `node_type` (`MILESTONE`, `TASK`, `CHECKPOINT`), `title`, `outcome`, `description`, `status` (`NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`, `SKIPPED`, `CANCELLED`), `start_date`/`due_date` (+precision), `effort_estimate_minutes`, `progress_weight NUMERIC(7,3) DEFAULT 1` (> 0), `progress_policy`, `manual_progress_percent`, `unlock_condition` (`ALL` default / `ANY`), `sort_order`, `completed_at`, audit columns | `uq_goal_node_goal_id_id (goal_id, id)`; **parent in the same goal** via composite FK `(goal_id, parent_id)` → `(goal_id, id)` CASCADE (deleting a node deletes its subtree); `completed_at` iff `COMPLETED`; `ix_goal_node_tree (goal_id, parent_id, sort_order)`; partial `ix_goal_node_due_date`. No stored lock/blocked status (§5.3). |
 | `goal_node_dependency` | `id`, `goal_id`, `prerequisite_node_id`, `dependent_node_id`, `created_at` | **Same goal enforced by the database**: both node columns use composite FKs with `goal_id` (CASCADE); `uq` on the pair; `ck` not self. Cycles are rejected by the application ([§8.2](#82-dependencies-and-unlocks)). |
@@ -401,6 +401,12 @@ Proposed rules (recommended default for D-2):
 7. Completing a parent whose counted descendants are not all completed returns
    `409 INVALID_STATUS_TRANSITION`, unless the request explicitly asks to complete the open
    descendants as well (proposed; API detail settled in Phase 3).
+8. A **Waypoint** (`MILESTONE`/`CHECKPOINT`) with counted children **follows them** (Phase 2 review, FQ-18):
+   all counted children `COMPLETED` → `COMPLETED`; any child `IN_PROGRESS` or `COMPLETED` → `IN_PROGRESS`;
+   otherwise the stored status, except that a Waypoint that is no longer complete returns to `NOT_STARTED`.
+   `SKIPPED`/`CANCELLED` Waypoints keep their status. Unlike progress (computed on read), this status is
+   **stored**: the goals module recalculates it in the write transaction and logs it as a system change in
+   `goal_change_log`. Rule 7 does not apply to these automatic transitions.
 
 ### 8.2 Dependencies and unlocks
 
@@ -506,7 +512,7 @@ Backup (owned by `atlas-infra`, §13.3, §21.11). Database-side requirements:
 | ID | Decision | Recommended default | Trade-offs |
 |---|---|---|---|
 | D-1 | Schema strategy (§21.5) | One schema `atlas`, module-prefixed tables, no cross-module FKs except owner (ADR-0004) | Simple operations and one Flyway history; no per-module DB privileges; dangling logical references possible (mitigated by listeners and tests) |
-| D-2 | Progress rules (§21.6) | §8.1: skipped excluded like cancelled but reported; partial work only through explicit `MANUAL` leaf percent; hierarchical weighted average; skipped/cancelled prerequisites satisfy dependencies | Predictable and explainable. Alternatives: skipped = done (inflates progress) or = not done (blocks 100 %); `IN_PROGRESS` = 50 % (simple but arbitrary); flat leaf weighting (ignores milestone weights) |
+| D-2 | Progress rules (§21.6) | §8.1: skipped excluded like cancelled but reported; Waypoint status follows its Steps (rule 8); goal progress `null` when nothing is measurable (rule 5); partial work only through explicit `MANUAL` leaf percent; hierarchical weighted average; skipped/cancelled prerequisites satisfy dependencies | Predictable and explainable. Alternatives: skipped = done (inflates progress) or = not done (blocks 100 %); `IN_PROGRESS` = 50 % (simple but arbitrary); flat leaf weighting (ignores milestone weights) |
 | D-3 | Date precision model (§21.7) | `DAY`/`MONTH`/`QUARTER`/`YEAR`/`APPROXIMATE`, normalised to period start, latest day derived; no season | Covers the spec examples with one date column + precision; season needs hemisphere logic; explicit ranges use start + target dates |
 | D-4 | Database users | MVP: one application user that owns schema `atlas` (needed by `create-schemas` and start-up migrations). Later (with B-7): a migration user owning the schema and a runtime user with only DML rights (`SELECT/INSERT/UPDATE/DELETE`), configured through `SPRING_FLYWAY_USER`/`SPRING_FLYWAY_PASSWORD` | One user is simplest but lets a compromised application drop tables. Two users are least-privilege but need grants for every new table (default privileges) and a second secret |
 | D-5 | Hard vs soft delete | Hard delete + explicit archive status; no `deleted_at` columns | Honest deletion semantics (§12.5) and simpler queries; mistakes are irreversible (UI confirmation, backups as last resort) |
@@ -589,9 +595,12 @@ IDs continue the PLAN-BACKEND backlog (database items are part of the same PRs w
 
 ### Phase 2
 
-- [ ] **DB-2.1** Owner review of D-1…D-9 (ADR-0004 to Accepted or revised).
-- [ ] **DB-2.2** Agree enum value lists with PLAN-FRONTEND (priority scale, relationship status list,
-  expense categories, onboarding step keys).
+- [ ] **DB-2.1** Owner review of D-1…D-9 (ADR-0004 to Accepted or revised). ADR-0004 (D-1) accepted by the owner
+  2026-11-27; D-2…D-9 still to be confirmed, recommended defaults apply meanwhile (checklist in [phase-2-contract-review.md §5](../implementation/phase-2-contract-review.md#5-owner-review-package-be-22-db-21)).
+- [x] **DB-2.2** Agree enum value lists with PLAN-FRONTEND (priority scale, relationship status list,
+  expense categories, onboarding step keys). Done 2026-11-27
+  ([phase-2-contract-review.md §3](../implementation/phase-2-contract-review.md#3-enum-value-lists-db-22));
+  expense categories deferred to the Phase 6 finance contract.
 
 ### Phase 3 (each item ships with its module PR in PLAN-BACKEND)
 
