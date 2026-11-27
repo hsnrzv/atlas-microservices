@@ -120,10 +120,16 @@ docker run --rm -p 8080:8080 \
 
 Build arguments `VERSION`, `REVISION` and `CREATED` only fill OCI labels. The application writes only to
 `/tmp`; with a read-only root filesystem mount an `emptyDir` at `/tmp`. CI scans every image with Trivy
-(fixable critical/high fail, exceptions in [`.trivyignore`](.trivyignore)) and uploads an image SBOM. Images are
-not published yet:
-publishing to `ghcr.io/hsnrzv/atlas-backend` is planned for Phase 2 (BE-2.4 in
-[PLAN-BACKEND](docs/plan/PLAN-BACKEND.md), following `atlas-infra` ADR-0007).
+(fixable critical/high fail, exceptions in [`.trivyignore`](.trivyignore)) and uploads an image SBOM. Third-party
+licence texts are in the image under `/licenses` ([`licenses/README.md`](licenses/README.md)).
+
+Every push to `main` publishes the immutable tag `ghcr.io/hsnrzv/atlas-backend:main-<12-char sha>` with provenance and
+SBOM attestations (an existing tag is never overwritten, `latest` is never pushed), scans the published digest and
+opens or updates the PR `chore/bump-backend-dev` in `atlas-infra` that pins `environments/dev` to the new tag and
+digest (BE-2.4, `atlas-infra` ADR-0007). The bump PR needs a GitHub App installed on `atlas-infra` with
+`contents: write` and `pull-requests: write`, configured here as the repository variable `ATLAS_INFRA_APP_CLIENT_ID`
+and the secret `ATLAS_INFRA_APP_PRIVATE_KEY`; without them the job is skipped with a warning. Releases (`X.Y.Z` on a
+published digest) and staging/prod promotion are separate, human-reviewed steps.
 
 ## Project structure
 
@@ -131,13 +137,14 @@ publishing to `ghcr.io/hsnrzv/atlas-backend` is planned for Phase 2 (BE-2.4 in
 .
 ├── .github/
 │   ├── workflows/backend-ci.yml         # ./mvnw verify (+ Testcontainers), coverage report, SBOM, dependency review on PRs
-│   ├── workflows/backend-container.yml  # docker build + smoke test + Trivy scan and image SBOM, no push (publishing: Phase 2)
+│   ├── workflows/backend-container.yml  # docker build + smoke test + Trivy scan and image SBOM; on main: GHCR publish + atlas-infra dev bump PR
 │   ├── CODEOWNERS, dependabot.yml, pull_request_template.md
 ├── .mvn/wrapper/                        # Maven Wrapper configuration (Maven 3.10.1)
 ├── docs/
 │   ├── adr/                             # Architecture Decision Records (this repository)
 │   ├── architecture/                    # DOMAIN-MODULES.md, API-CONTRACT.md
 │   └── plan/                            # PLAN-BACKEND.md, PLAN-DATABASE.md
+├── licenses/                            # SPDX licence texts copied into the image (/licenses/texts)
 ├── src/main/java/dev/myatlas/           # AtlasApplication only (modules arrive in Phase 3)
 ├── src/main/resources/
 │   ├── application.yaml                 # common configuration

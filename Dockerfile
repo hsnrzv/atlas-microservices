@@ -2,6 +2,7 @@
 
 # ---- Build stage -------------------------------------------------------------------------------
 FROM eclipse-temurin:25-jdk-noble AS build
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /workspace
 
 # Dependency layer: re-used until pom.xml or the Maven Wrapper changes.
@@ -13,6 +14,18 @@ RUN ./mvnw -B -q dependency:go-offline
 COPY src/ src/
 RUN ./mvnw -B -DskipTests package \
     && java -Djarmode=tools -jar target/atlas-backend.jar extract --layers --launcher --destination target/extracted
+
+# Third-party licence texts shipped with the image (BE-2.4, THIRD-PARTY-NOTICES.md): THIRD-PARTY.txt lists every
+# packaged library with its licence, and the LICENSE/NOTICE files bundled in each jar are kept per jar. The
+# canonical licence texts come from licenses/ (see licenses/README.md).
+RUN ./mvnw -B -q license:add-third-party \
+    && find target/extracted -path '*/BOOT-INF/lib/*.jar' -print0 | while IFS= read -r -d '' lib; do \
+         entries="$(jar tf "$lib" | grep -iE '^META-INF/([^/]+/)?(LICENSE|NOTICE|COPYING)[^/]*$' || true)"; \
+         [ -n "$entries" ] || continue; \
+         dest="target/licenses/jars/$(basename "$lib" .jar)"; \
+         mkdir -p "$dest" && (cd "$dest" && echo "$entries" | xargs jar xf "/workspace/$lib"); \
+       done \
+    && test -s target/licenses/THIRD-PARTY.txt
 
 # ---- Runtime stage -----------------------------------------------------------------------------
 FROM eclipse-temurin:25-jre-noble AS runtime
@@ -42,6 +55,8 @@ COPY --from=build /workspace/target/extracted/dependencies/ ./
 COPY --from=build /workspace/target/extracted/spring-boot-loader/ ./
 COPY --from=build /workspace/target/extracted/snapshot-dependencies/ ./
 COPY --from=build /workspace/target/extracted/application/ ./
+COPY --from=build /workspace/target/licenses/ /licenses/
+COPY licenses/*.txt /licenses/texts/
 
 USER 10001:10001
 EXPOSE 8080
