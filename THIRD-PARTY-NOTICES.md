@@ -79,7 +79,7 @@ the permissive or weak-copyleft option applies to unmodified binary use.
 
 | Tool | Version | License | Use |
 |---|---|---|---|
-| Apache Maven (via Maven Wrapper 3.3.4) | 3.10.0 | Apache-2.0 | Build |
+| Apache Maven (via Maven Wrapper 3.3.4) | 3.10.1 | Apache-2.0 | Build |
 | Maven Enforcer / Surefire / Failsafe / Compiler plugins | 3.6.3 / 3.5.6 / 3.5.6 / 3.15.0 | Apache-2.0 | Build rules, tests |
 | JaCoCo (`jacoco-maven-plugin`, test agent) | 0.8.16 | EPL-2.0 | Coverage report in `verify`; the agent is attached to test JVMs only, never packaged |
 | CycloneDX Maven plugin (`cyclonedx-maven-plugin`, version managed by Spring Boot) | 2.9.3 | Apache-2.0 | SBOM generation (the generated `application.cdx.json` is data, not code) |

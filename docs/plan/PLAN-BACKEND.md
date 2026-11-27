@@ -39,8 +39,8 @@ Security yet (shared contract, user decision 1).
 
 | Area | Delivered | Evidence |
 |---|---|---|
-| Scaffold | Spring Boot **4.1.2**, Java **25** (scaffolded on 21, moved by [ADR-0008](../adr/0008-java-25-lts-runtime.md)), Maven Wrapper 3.3.4 (Maven **3.10.0** from Maven Central), group `dev.myatlas`, artifact `atlas-backend`, single class `dev.myatlas.AtlasApplication` | `pom.xml`, `mvnw`, `.mvn/wrapper/maven-wrapper.properties` |
-| Build rules | `maven-enforcer-plugin` 3.6.3: Java ≥ 25 (`java.version`), Maven ≥ 3.10.0, dependency convergence | `./mvnw -B verify` |
+| Scaffold | Spring Boot **4.1.2**, Java **25** (scaffolded on 21, moved by [ADR-0008](../adr/0008-java-25-lts-runtime.md)), Maven Wrapper 3.3.4 (Maven **3.10.1** from Maven Central), group `dev.myatlas`, artifact `atlas-backend`, single class `dev.myatlas.AtlasApplication` | `pom.xml`, `mvnw`, `.mvn/wrapper/maven-wrapper.properties` |
+| Build rules | `maven-enforcer-plugin` 3.6.3: Java ≥ 25 (`java.version`), Maven ≥ 3.10.1, dependency convergence | `./mvnw -B verify` |
 | Modularity | Spring Modulith **2.1.1**; `ModularityTests` runs `ApplicationModules.verify()` and writes module docs to `target/spring-modulith-docs/` | `src/test/java/dev/myatlas/ModularityTests.java` |
 | Database | PostgreSQL **18** (`postgres:18.6-alpine`), Flyway 12.4.0 with schema `atlas`, `V1__baseline.sql` (schema comment, no tables), Hibernate `ddl-auto=validate` | `src/main/resources/db/migration/` |
 | Configuration | `application.yaml` (common), `application-local.yaml` (plain-text logs, Docker Compose on). No `dev`/`staging`/`prod` files: these environments are configured only through environment variables | `src/main/resources/` |
