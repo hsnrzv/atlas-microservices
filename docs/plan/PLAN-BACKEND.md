@@ -447,6 +447,8 @@ Contract for `atlas-infra` (also in README):
 
 Database decisions D-1…D-9 are in [PLAN-DATABASE §12](PLAN-DATABASE.md#12-open-decisions); API decisions
 A-1…A-6 in [API-CONTRACT §14](../architecture/API-CONTRACT.md#14-open-decisions-api) (resolved in Phase 2, see [phase-2-contract-review.md](../implementation/phase-2-contract-review.md)).
+B-3, B-6 and B-10 were confirmed by the owner on 2026-11-27 (Phase 2 review); the recommended default is the
+decision.
 
 | ID | Decision | Recommended default | Trade-offs | Decide by |
 |---|---|---|---|---|
@@ -515,9 +517,9 @@ No backend feature code. The backend side of Phase 2 makes Phase 3 unambiguous.
   PLAN-FRONTEND (goal, node tree, focus view, progress, reward, dashboard DTOs); resolve A-1…A-6. Done
   2026-11-27 against the delivered `atlas` ports and HTTP adapters: A-1…A-6 resolved, FQ-1…FQ-22 answered
   ([phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §1–§2), API-CONTRACT updated.
-- [ ] **BE-2.2** Owner review of ADR-0004, ADR-0005, ADR-0006 and decisions B-1…B-13, D-1…D-9; update
-  statuses to Accepted or revise. ADR-0004/0005/0006 accepted by the owner 2026-11-27; B-3, B-10 and D-2…D-9
-  still to be confirmed, recommended defaults apply meanwhile (checklist in [phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §5).
+- [x] **BE-2.2** Owner review of ADR-0004, ADR-0005, ADR-0006 and decisions B-1…B-13, D-1…D-9; update
+  statuses to Accepted or revise. Done 2026-11-27: ADR-0004/0005/0006 accepted; B-3, B-6, B-10, D-1…D-9 and
+  the review confirmed by the owner; the other B items are decided at the time in §13 (checklist in [phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §5).
 - [x] **BE-2.3** Time-boxed spike (throwaway branch, ≤ 1 day): springdoc 3.x with Boot 4.2/Jackson 3 for
   records with `Money` (string amount) and `PlannedDate`; JWT resource server with
   `audiences`; report findings in ADR-0006/0005. Done 2026-11-27: springdoc 3.2.1 works; findings S-1…S-8

@@ -1,6 +1,8 @@
 # Phase 2 — Contract alignment review
 
 - Date: 2026-11-27
+- Status: **Confirmed by the owner (@hsnrzv) on 2026-11-27**, including the ADRs, B/D decisions, A-1…A-6 and
+  the FQ answers.
 - Scope: roadmap items BE-2.1, BE-2.2 (preparation), BE-2.3, DB-2.1 (preparation), DB-2.2. No feature code.
 - Inputs:
   - `atlas` `origin/main` at `5807475`: `docs/architecture/frontend.md` §6.5 (FQ-1…FQ-22), `src/app/core/models/*`,
@@ -143,9 +145,9 @@ Owner checklist (tick in the PR or a follow-up):
 - [x] ADR-0004 → Accepted (owner, 2026-11-27; covers D-1)
 - [x] ADR-0005 → Accepted (owner, 2026-11-27)
 - [x] ADR-0006 → Accepted (owner, 2026-11-27; covers B-6/A-6)
-- [ ] B-3, B-10 confirmed (B-6 accepted with ADR-0006)
-- [ ] D-2…D-9 confirmed (D-1 accepted with ADR-0004) (PLAN-DATABASE §12)
-- [ ] A-1…A-6 and the FQ answers in §2 confirmed
+- [x] B-3, B-10 confirmed (owner, 2026-11-27; B-6 accepted with ADR-0006)
+- [x] D-2…D-9 confirmed (owner, 2026-11-27; D-1 accepted with ADR-0004) (PLAN-DATABASE §12)
+- [x] A-1…A-6 and the FQ answers in §2 confirmed (owner, 2026-11-27)
 
 ## 6. Follow-ups in other repositories
 
