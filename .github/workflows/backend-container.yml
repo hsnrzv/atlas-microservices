@@ -10,7 +10,8 @@ name: backend-container
 #   bump-infra-dev  opens or updates one PR in hsnrzv/atlas-infra that sets newTag + digest for the backend image
 #                   in environments/dev/kustomization.yaml, using a GitHub App installation token (repository
 #                   variable ATLAS_INFRA_APP_CLIENT_ID, secret ATLAS_INFRA_APP_PRIVATE_KEY). Skipped with a
-#                   warning until the owner has configured the App.
+#                   warning until the owner has configured the App. Enables auto-merge (squash) on the PR, so
+#                   it merges once atlas-infra's required status checks pass.
 # Releases (X.Y.Z on an already published digest) and staging/prod promotion are not part of this workflow.
 # See docs/plan/PLAN-BACKEND.md (backlog) and atlas-infra docs/plan/PLAN-INFRASTRUCTURE-CICD.md.
 
@@ -322,3 +323,7 @@ jobs:
           else
             gh pr create --repo "$INFRA_REPO" --base main --head "$BUMP_BRANCH" --title "$title" --body "$body"
           fi
+
+          # Dev only: GitHub merges once atlas-infra's required checks pass. Needs "Allow auto-merge" in atlas-infra.
+          gh pr merge "$BUMP_BRANCH" --repo "$INFRA_REPO" --auto --squash --delete-branch \
+            || echo "::warning::could not enable auto-merge on the atlas-infra dev bump PR; merge it manually"
