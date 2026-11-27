@@ -524,7 +524,7 @@ No backend feature code. The backend side of Phase 2 makes Phase 3 unambiguous.
   records with `Money` (string amount) and `PlannedDate`; JWT resource server with
   `audiences`; report findings in ADR-0006/0005. Done 2026-11-27: springdoc 3.2.1 works; findings S-1…S-8
   in [phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §4 and in ADR-0005/0006; the spike branch was deleted unmerged.
-- [ ] **BE-2.4** `backend-container.yml` publishes `main-<sha>` to GHCR on `main` (OIDC `GITHUB_TOKEN`
+- [x] **BE-2.4** `backend-container.yml` publishes `main-<sha>` to GHCR on `main` (OIDC `GITHUB_TOKEN`
   `packages: write`, provenance, SBOM from BE-1.13, image scan) and opens the bump PR to `atlas-infra`
   `environments/dev` through the GitHub App. Starts once `atlas-infra` ADR-0007 is accepted. The published image
   also carries the third-party licence texts (`/licenses`; open item in
@@ -532,9 +532,9 @@ No backend feature code. The backend side of Phase 2 makes Phase 3 unambiguous.
   (only job with `packages: write`, main only) pushes `main-<12-char sha>` with `provenance: mode=max` and `sbom: true`,
   refuses existing tags, Trivy-scans the published digest; `bump-infra-dev` opens or updates `chore/bump-backend-dev`
   in `atlas-infra` (newTag + digest, never older than what is there) with a GitHub App token; `/licenses` in the image
-  (`THIRD-PARTY.txt`, per-jar LICENSE/NOTICE files, SPDX texts in `licenses/`). Open (owner): accept `atlas-infra`
-  ADR-0007, create the GitHub App and set `ATLAS_INFRA_APP_CLIENT_ID`/`ATLAS_INFRA_APP_PRIVATE_KEY`, first green
-  publish run and first bump PR passing `manifests-ci`.
+  (`THIRD-PARTY.txt`, per-jar LICENSE/NOTICE files, SPDX texts in `licenses/`). Done 2026-11-27: `atlas-infra` ADR-0007
+  accepted, GitHub App configured, first green publish, and the bump PRs auto-merge once `manifests-ci` passes
+  (`atlas-infra` #2, #3).
 
 ### Phase 3: core backend domain and database (order per §18)
 
