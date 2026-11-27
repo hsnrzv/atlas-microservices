@@ -37,7 +37,14 @@ Proposed default:
    deprecates the old `spring-boot-starter-oauth2-resource-server` name).
    - Every request is authenticated, except `/actuator/health/**` and `/actuator/info`.
    - JWT access tokens are validated for signature (JWKS), issuer, expiry/not-before, and a mandatory
-     audience (custom `OAuth2TokenValidator`). Required scopes are checked per endpoint family.
+     audience (`spring.security.oauth2.resourceserver.jwt.audiences`; spike BE-2.3 confirmed that this
+     Boot property rejects a wrong `aud` with `401`, so no custom validator is needed). Required scopes are
+     checked per endpoint family.
+   - Spike findings for Phase 3 (BE-3.03; `docs/implementation/phase-2-contract-review.md` §4, S-6…S-8):
+     with the starter on the classpath the context does not start without a configured `JwtDecoder`, so
+     tests and the `local` identity (B-2) must be configured first. Spring Security 7 answers `401` with an
+     empty body and `WWW-Authenticate: Bearer resource_metadata=…` (RFC 9728); an entry point and an
+     access-denied handler return Problem Details (`UNAUTHENTICATED`, `FORBIDDEN`) instead.
 3. **Web uses a BFF session.** The backend acts as a confidential OAuth2 client
    (`spring-boot-starter-security-oauth2-client`, Authorization Code + PKCE):
    - Tokens stay on the server.

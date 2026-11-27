@@ -16,7 +16,7 @@ packages). Phase numbers refer to `project-instruction.md` §18.
 | `shared` (open) | `dev.myatlas.shared` | Cross-cutting **value types and SPIs only**: `OwnerId`, `CurrentOwner`, `Money`/`CurrencyCode`, `Frequency`, `DatePrecision`/`PlannedDate`, `Clock` access, paging types, base error types, `OwnerDataEraser`/`OwnerDataExporter` SPIs | none (library) | none | 3 |
 | `profile` | `dev.myatlas.profile` | Internal user (`owner_id`) and IdP subject mapping, profile, preferences (locale, timezone, currency, units, week start, theme), optional personal context, baseline snapshots, account export/deletion orchestration | Read/update profile and preferences; resolve current owner | `profile_` | 3 |
 | `onboarding` | `dev.myatlas.onboarding` | Wizard step state, completion/reopen, baseline-capture workflow (delegates data to owning modules) | Read/save step, complete, reopen | `onboarding_` | 3 |
-| `ikigai` | `dev.myatlas.ikigai` | Per-owner Life Dimension (Ikigai area) settings: label, colour token, order, hidden flag for the 7 canonical keys | List/update areas; validate area keys | `ikigai_` | 3 |
+| `ikigai` | `dev.myatlas.ikigai` | Per-owner Life Dimension (Ikigai area) settings: label, colour token, order, hidden and focus flags for the 7 canonical keys | List/update areas; set focus areas; validate area keys | `ikigai_` | 3 |
 | `goals` | `dev.myatlas.goals` | Goals, goal-node tree (MILESTONE/TASK/CHECKPOINT), statuses, progress policy and roll-up, node dependencies + unlock state + overrides, notes, rewards, goal links, goal-area assignment, change log | CRUD goals/nodes, complete/reopen, dependencies, focus tree, progress explanation, timeline read model | `goal_` | 3 |
 | `finance` | `dev.myatlas.finance` | Financial baseline (income, expenses, saving positions), goal financial impacts (planned/scenario/committed/realized), scenarios, monthly projection | CRUD baseline, define impact, realize impact, calculate projection | `finance_` | 6 (API draft in 3) |
 | `capacity` | `dev.myatlas.capacity` | Weekly availability, time commitments, effort estimates per goal/node, over-capacity detection | Read/update capacity, capacity summary with conflicts | `capacity_` | 6 |
@@ -94,7 +94,7 @@ dependency fails `ModularityTests`.
 | `goals` | `shared`, `ikigai` | `finance`, `capacity`, `dashboard` | Validates area keys; publishes events for others |
 | `finance` | `shared`, `goals` | `capacity`, `dashboard` | Validates goal references; reacts to `GoalArchived`/`GoalDeleted` |
 | `capacity` | `shared`, `goals` | `finance`, `dashboard` | Estimates per goal/node; reacts to goal events |
-| `onboarding` | `shared`, `profile`, `finance` | `goals`, `ikigai`, `dashboard` | Orchestrates baseline capture (§6.1: preferences, personal context, financial baseline) by calling the owning modules' use cases |
+| `onboarding` | `shared`, `profile`, `ikigai`, `finance` | `goals`, `dashboard` | Orchestrates baseline capture (§6.1: focus areas, preferences, personal context, financial baseline) by calling the owning modules' use cases. `ikigai` was added in the Phase 2 review for the `areas` step (FQ-17); it creates no cycle because `ikigai` depends only on `shared` |
 | `dashboard` | `shared`, `profile`, `ikigai`, `goals`, `finance`, `capacity` | (nothing depends on `dashboard`) | Read-only aggregation |
 | extensions | `shared`, `goals`, `finance`, `capacity` | each other, `dashboard`, `ai` | Attach to core concepts only |
 | `ai` (later) | `shared` + published APIs of the modules it reads/applies | anything internal | Applies approved suggestions only through normal use cases (§8.1) |
@@ -120,6 +120,7 @@ flowchart TD
     finance --> goals
     capacity --> goals
     onboarding --> profile
+    onboarding --> ikigai
     onboarding --> finance
     dashboard --> profile
     dashboard --> ikigai

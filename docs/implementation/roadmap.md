@@ -50,13 +50,14 @@ Runs in parallel with the frontend's mock-backed shell (already delivered in `at
 
 | ID | Item | Status |
 |---|---|---|
-| BE-2.1 | Review API-CONTRACT §9.1–§9.7 against the delivered frontend ports and FQ-1…FQ-22; resolve A-1…A-6 | open; the frontend ports and FQ list are ready for review |
-| BE-2.2 | Owner review of ADR-0004, ADR-0005, ADR-0006, B-1…B-13 and D-1…D-9 | open (owner) |
-| BE-2.3 | Spike (≤ 1 day, throwaway): springdoc 3.x with Boot 4.2/Jackson 3; JWT `audiences` | open |
+| BE-2.1 | Review API-CONTRACT §9.1–§9.7 against the delivered frontend ports and FQ-1…FQ-22; resolve A-1…A-6 | done 2026-11-28: A-1…A-6 resolved; FQ-1…FQ-22 accepted, changed, rejected or deferred to a phase ([phase-2-contract-review.md](phase-2-contract-review.md) §1–§2); DB-2.2 enum lists agreed (§3); frontend follow-ups in §6 |
+| BE-2.2 | Owner review of ADR-0004, ADR-0005, ADR-0006, B-1…B-13 and D-1…D-9 | open (owner): package with recommendations and checklist ready ([phase-2-contract-review.md](phase-2-contract-review.md) §5) |
+| BE-2.3 | Spike (≤ 1 day, throwaway): springdoc 3.x with Boot 4.2/Jackson 3; JWT `audiences` | done 2026-11-28: springdoc 3.2.1 and `audiences` work; findings S-1…S-8 ([phase-2-contract-review.md](phase-2-contract-review.md) §4) recorded in ADR-0005/0006; branch deleted |
 | BE-2.4 | Publish `main-<sha>` to GHCR (provenance, SBOM, scan) and open the bump PR to `atlas-infra` | blocked: `atlas-infra` ADR-0007 is Proposed (SBOM and scan ready since BE-1.13) |
 
 **Gate 2:** ADR-0004/0005/0006 accepted or revised; A-1…A-6 resolved and each FQ answered or deferred to a phase;
-spike findings recorded. BE-2.4 may finish later (it is not on the critical path for phase 3).
+spike findings recorded. BE-2.4 may finish later (it is not on the critical path for phase 3). **Status
+2026-11-28:** A-1…A-6, FQ and spike done; waiting for the owner's ADR decisions (BE-2.2).
 
 ### Phase 3 — Core domain and database
 
