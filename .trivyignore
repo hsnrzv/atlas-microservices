@@ -1,0 +1,5 @@
+# Accepted image findings (BE-1.13). The backend-container scan fails on fixable CRITICAL and HIGH vulnerabilities.
+# Each entry needs a reason, the PR that accepted it and an expiry date (Definition of Done, project-instruction §19):
+#
+#   # <reason>; accepted in <PR link>
+#   CVE-YYYY-NNNNN exp:YYYY-MM-DD

@@ -295,8 +295,8 @@ THIRD-PARTY-NOTICES in the same PR.
 
 | Dependency | Phase | Purpose | Status (2026-11-12) |
 |---|---|---|---|
-| `jacoco-maven-plugin` | 1 follow-up | Coverage report (gate from Phase 3) | 0.8.16 on Central, EPL-2.0 (licence to re-check) |
-| `cyclonedx-maven-plugin` | 1 follow-up | SBOM per build / image | 2.9.3 on Central, Apache-2.0 (to re-check) |
+| `jacoco-maven-plugin` | 1 follow-up | Coverage report (gate from Phase 3) | **Added 2026-11-26 (BE-1.12):** 0.8.16, EPL-2.0 (build/test tool, not packaged) |
+| `cyclonedx-maven-plugin` | 1 follow-up | SBOM per build / image | **Added 2026-11-26 (BE-1.13):** 2.9.3 (managed by Boot 4.1.2, which also configures the execution), Apache-2.0 |
 | `spring-boot-starter-security-oauth2-resource-server` | 3 | JWT resource server | Boot-managed; the old `spring-boot-starter-oauth2-resource-server` name is deprecated in Boot 4.1.2 |
 | `spring-boot-starter-security-test` | 3 | Security test support (JWT post-processors) | Boot-managed, verified present for 4.1.2 |
 | `springdoc-openapi-starter-webmvc-api` | 3 | Code-first OpenAPI (ADR-0006) | 3.2.0, built against Boot 4.1.2, Apache-2.0 |
@@ -364,8 +364,9 @@ flowchart LR
 - No secrets in the repository. Local credentials `atlas`/`atlas` are marked LOCAL ONLY. CI uses
   throwaway credentials in an isolated Docker network.
 - Supply chain: Dependabot (Maven, Actions, Docker, Compose), dependency review on PRs, Maven Wrapper and
-  all builds use Maven Central only (no private mirrors referenced). SBOM, container scanning and secret
-  scanning are open Phase 1 follow-ups (§13.2).
+  all builds use Maven Central only (no private mirrors referenced). Every build produces a CycloneDX SBOM;
+  `backend-container` scans the image with Trivy (fixable critical/high fail) and uploads an image SBOM
+  (BE-1.13). Secret scanning with push protection is an owner setting (BE-1.14).
 - Container: non-root UID 10001, no shell for the user, no package manager use at runtime, read-only root
   filesystem possible with a writable `/tmp` volume.
 - Problem Details never expose stack traces, SQL or personal values.
@@ -490,10 +491,15 @@ cross-referencing from `atlas` `IMPLEMENTATION-ROADMAP.md`.
   CODEOWNERS, PR template, Dependabot) and THIRD-PARTY-NOTICES.
 - [x] **BE-1.11** Phase 0 documents: this plan, PLAN-DATABASE, DOMAIN-MODULES, API-CONTRACT,
   ADR-0001…0007.
-- [ ] **BE-1.12** JaCoCo report in `verify`, uploaded by CI (no gate yet).
-- [ ] **BE-1.13** Supply chain: CycloneDX SBOM in the build and image workflow; container vulnerability
+- [x] **BE-1.12** JaCoCo report in `verify`, uploaded by CI (no gate yet). Done 2026-11-26: JaCoCo 0.8.16,
+  unit and integration data merged into `target/site/jacoco/`; `backend-ci` uploads it (`backend-coverage`) and
+  writes a line/branch summary to the job summary.
+- [x] **BE-1.13** Supply chain: CycloneDX SBOM in the build and image workflow; container vulnerability
   scan (tool and licence chosen with `atlas-infra`); fail on critical/high without documented exception
-  (§19).
+  (§19). Done 2026-11-26: Boot-managed CycloneDX 2.9.3 (`META-INF/sbom/application.cdx.json`, uploaded as
+  `backend-sbom`); Trivy v0.76.2 in `backend-container` with the same pinned action and policy as `atlas` F2-11
+  (fixable CRITICAL/HIGH fail, `.trivyignore` with expiry) plus an image SBOM (`backend-image-sbom`). Trivy is the
+  shared-scanner proposal; final confirmation is `atlas-infra` INF-2.0.
 - [ ] **BE-1.14** Owner actions on GitHub (not code): push the repository, enable dependency graph,
   Dependabot alerts, secret scanning with push protection, branch protection on `main` requiring
   `backend-ci` and `backend-container`. Pushed to `origin/main` by 2026-11-26; settings and branch protection open.

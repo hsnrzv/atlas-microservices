@@ -25,7 +25,8 @@
 		<spring-modulith.version>2.1.1</spring-modulith.version>
 		<!-- Keep in sync with distributionUrl in .mvn/wrapper/maven-wrapper.properties -->
 		<maven.version.required>3.10.0</maven.version.required>
-		<!-- Extended (not replaced) by surefire/failsafe argLine below; lets tools such as JaCoCo add agents later -->
+		<jacoco.version>0.8.16</jacoco.version>
+		<!-- Set by the JaCoCo agents and extended (not replaced) by the surefire/failsafe argLine below -->
 		<argLine/>
 	</properties>
 
@@ -185,6 +186,65 @@
 				<configuration>
 					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
 				</configuration>
+			</plugin>
+			<plugin>
+				<!-- Coverage report only (BE-1.12); thresholds are enforced from Phase 3 (BE-3.06).
+				     Unit (surefire) and integration (failsafe) data are merged into one report:
+				     target/site/jacoco/{index.html,jacoco.xml,jacoco.csv}. -->
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>prepare-agent-integration</id>
+						<goals>
+							<goal>prepare-agent-integration</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>merge</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>merge</goal>
+						</goals>
+						<configuration>
+							<fileSets>
+								<fileSet>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>jacoco.exec</include>
+										<include>jacoco-it.exec</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+							<destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+							<outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- CycloneDX SBOM (BE-1.13). Execution and configuration come from spring-boot-starter-parent:
+				     target/classes/META-INF/sbom/application.cdx.json, packaged into the jar. The container image
+				     SBOM (OS packages + jars) is produced by Trivy in backend-container. -->
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

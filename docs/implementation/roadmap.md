@@ -1,8 +1,8 @@
 # Implementation roadmap — atlas-backend
 
-- Status: **Proposed 2026-11-17**, awaiting owner approval. Phase 1 is delivered and pushed to `origin/main`
-  (2026-11-26) except BE-1.12…BE-1.15; phases 2–4 have not started. No feature code exists yet
-  (only `AtlasApplication`).
+- Status: **Proposed 2026-11-17**, awaiting owner approval. Phase 1 code is complete (BE-1.12 and BE-1.13 done
+  locally on 2026-11-26); the owner actions BE-1.14 and BE-1.15 (repository settings, first green CI run) are
+  open. Phases 2–4 have not started. No feature code exists yet (only `AtlasApplication`).
 - Purpose: set the order in which the backend is built, phase by phase, with an explicit gate between phases and the
   cross-repository hand-offs that unblock the frontend and infrastructure.
 - Maps the cross-repository phases P0–P11 in `atlas` `docs/plan/IMPLEMENTATION-ROADMAP.md` onto the existing backlog
@@ -35,8 +35,8 @@
 | ID | Item | Status |
 |---|---|---|
 | BE-1.1…1.11 | Boot 4.1.2 scaffold (Java 25), profiles, compose PostgreSQL, Flyway V1, Modulith test, IT, Docker, CI | done 2026-11-12 (local) |
-| BE-1.12 | JaCoCo report in `verify`, uploaded by CI (no gate yet) | open |
-| BE-1.13 | CycloneDX SBOM + container vulnerability scan, fail on fixable critical/high | open; Trivy proposed (same as `atlas` F2-11), to be agreed with infra |
+| BE-1.12 | JaCoCo report in `verify`, uploaded by CI (no gate yet) | done 2026-11-26 (local; CI run pending BE-1.15) |
+| BE-1.13 | CycloneDX SBOM + container vulnerability scan, fail on fixable critical/high | done 2026-11-26 (local; CI run pending BE-1.15): Boot-managed CycloneDX SBOM; Trivy v0.76.2 scan + image SBOM with the same pin and policy as `atlas` F2-11; scanner to be confirmed by infra INF-2.0 |
 | BE-1.14 | Owner: push, dependency graph, Dependabot alerts, secret scanning with push protection, branch protection | in progress (owner action): pushed to `origin/main` by 2026-11-26; repository settings and branch protection open |
 | BE-1.15 | First green run of `backend-ci` and `backend-container` on GitHub | open; `main` is pushed, first green run to be confirmed |
 
@@ -51,7 +51,7 @@ Runs in parallel with the frontend's mock-backed shell (already delivered in `at
 | BE-2.1 | Review API-CONTRACT §9.1–§9.7 against the delivered frontend ports and FQ-1…FQ-22; resolve A-1…A-6 | open; the frontend ports and FQ list are ready for review |
 | BE-2.2 | Owner review of ADR-0004, ADR-0005, ADR-0006, B-1…B-13 and D-1…D-9 | open (owner) |
 | BE-2.3 | Spike (≤ 1 day, throwaway): springdoc 3.x with Boot 4.1/Jackson 3; JWT `audiences` | open |
-| BE-2.4 | Publish `main-<sha>` to GHCR (provenance, SBOM, scan) and open the bump PR to `atlas-infra` | blocked: `atlas-infra` ADR-0007 is Proposed; needs BE-1.13 |
+| BE-2.4 | Publish `main-<sha>` to GHCR (provenance, SBOM, scan) and open the bump PR to `atlas-infra` | blocked: `atlas-infra` ADR-0007 is Proposed (SBOM and scan ready since BE-1.13) |
 
 **Gate 2:** ADR-0004/0005/0006 accepted or revised; A-1…A-6 resolved and each FQ answered or deferred to a phase;
 spike findings recorded. BE-2.4 may finish later (it is not on the critical path for phase 3).
@@ -140,7 +140,7 @@ Boot 4.1, Maven Wrapper); identity provider Microsoft Entra External ID (B-1, 20
 |---|---|---|
 | ADR-0004 schema strategy, ADR-0006 REST/OpenAPI | Accept as proposed | Gate 2 |
 | ADR-0005 authentication (provider-neutral OIDC) | Accept; BFF session in Phase 9 | Gate 2 |
-| Image scanner (BE-1.13) | Trivy (Apache-2.0), same version and policy as `atlas` | Gate 1 |
+| Image scanner (BE-1.13) | Trivy (Apache-2.0), same version and policy as `atlas` — implemented 2026-11-26; confirm at infra INF-2.0 | Gate 1 |
 | Staging access before Phase 9 (R-2) | Staging allow-listed (NSG) plus a staging-only Entra app registration for e2e | Gate 3 |
 | Breaking-change check tool (BE-4.1) | Choose and licence-check during BE-4.1 | Phase 4 |
 | Migration execution (B-7, infra ADR-0008) | Start-up Flyway until Phase 9, then PreSync Job | Phase 9 |
