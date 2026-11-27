@@ -1,8 +1,9 @@
 # Implementation roadmap — atlas-backend
 
-- Status: **Proposed 2026-11-17**, awaiting owner approval. Phase 1 code is complete (BE-1.12 and BE-1.13 done
-  locally on 2026-11-26); the owner actions BE-1.14 and BE-1.15 (repository settings, first green CI run) are
-  open. Phases 2–4 have not started. No feature code exists yet (only `AtlasApplication`).
+- Status: **Proposed 2026-11-17**, awaiting owner approval. **Phase 1 is complete and Gate 1 is met
+  (2026-11-27):** the repository is public, the `main` ruleset requires both workflows, and `backend-ci` and
+  `backend-container` are green on GitHub. Phases 2–4 have not started. No feature code exists yet (only
+  `AtlasApplication`).
 - Purpose: set the order in which the backend is built, phase by phase, with an explicit gate between phases and the
   cross-repository hand-offs that unblock the frontend and infrastructure.
 - Maps the cross-repository phases P0–P11 in `atlas` `docs/plan/IMPLEMENTATION-ROADMAP.md` onto the existing backlog
@@ -34,13 +35,14 @@
 
 | ID | Item | Status |
 |---|---|---|
-| BE-1.1…1.11 | Boot 4.1.2 scaffold (Java 25), profiles, compose PostgreSQL, Flyway V1, Modulith test, IT, Docker, CI | done 2026-11-12 (local) |
-| BE-1.12 | JaCoCo report in `verify`, uploaded by CI (no gate yet) | done 2026-11-26 (local; CI run pending BE-1.15) |
-| BE-1.13 | CycloneDX SBOM + container vulnerability scan, fail on fixable critical/high | done 2026-11-26 (local; CI run pending BE-1.15): Boot-managed CycloneDX SBOM; Trivy v0.76.2 scan + image SBOM with the same pin and policy as `atlas` F2-11; scanner to be confirmed by infra INF-2.0 |
-| BE-1.14 | Owner: push, dependency graph, Dependabot alerts, secret scanning with push protection, branch protection | in progress (owner action): pushed to `origin/main` by 2026-11-26; repository settings and branch protection open |
-| BE-1.15 | First green run of `backend-ci` and `backend-container` on GitHub | open; `main` is pushed, first green run to be confirmed |
+| BE-1.1…1.11 | Boot scaffold (4.1.2, now 4.2.0; Java 25), profiles, compose PostgreSQL, Flyway V1, Modulith test, IT, Docker, CI | done 2026-11-12 (local) |
+| BE-1.12 | JaCoCo report in `verify`, uploaded by CI (no gate yet) | done 2026-11-26; runs in CI since 2026-11-27 |
+| BE-1.13 | CycloneDX SBOM + container vulnerability scan, fail on fixable critical/high | done 2026-11-26; runs in CI since 2026-11-27: Boot-managed CycloneDX SBOM; Trivy v0.76.2 scan + image SBOM with the same pin and policy as `atlas` F2-11; scanner to be confirmed by infra INF-2.0 |
+| BE-1.14 | Owner: push, dependency graph, Dependabot alerts, secret scanning with push protection, branch protection | done 2026-11-27: repository public; dependency graph on (`Dependency review` passes); Dependabot alerts and secret scanning set by the owner; ruleset `protect-main` on the default branch (PR required with conversations resolved, required checks `Maven verify (unit, modularity, Testcontainers IT)` and `Build and smoke-test image (no push)`, no force push or deletion). Follow-up (owner): enable private vulnerability reporting, which `SECURITY.md` relies on (off on 2026-11-27) |
+| BE-1.15 | First green run of `backend-ci` and `backend-container` on GitHub | done 2026-11-27: both workflows green on `main` (PR #4, then #5 and #6) |
 
-**Gate 1:** both workflows green on GitHub; branch protection requires them; SBOM and scan run in CI.
+**Gate 1:** both workflows green on GitHub; branch protection requires them; SBOM and scan run in CI. **Met
+2026-11-27.**
 
 ### Phase 2 — Contract alignment (no feature code)
 
@@ -126,13 +128,13 @@ IDs are assigned when a phase is planned in detail (one PR per item, as above).
 | BE-4.5 staging readiness | `atlas` Gate 9; infra Gate 4 |
 | Phase 9 BFF (FQ-22) | `atlas` sets `auth: true` (the F4-5 client is ready and off by default) |
 
-**Critical path:** BE-1.14 → BE-2.2 / BE-2.1 → BE-3.0x → BE-3.3x → BE-3.82 → `atlas` F4-1 → F4-6 → staging e2e
+**Critical path:** BE-2.2 / BE-2.1 → BE-3.0x → BE-3.3x → BE-3.82 → `atlas` F4-1 → F4-6 → staging e2e
 (BE-4.5 with infra Phase 4).
 
 ## 4. Decisions
 
 Accepted: ADR-0001, ADR-0002 (modular monolith), ADR-0003 (PostgreSQL/Flyway/JPA), ADR-0007/0008 (Java 25,
-Boot 4.1, Maven Wrapper); identity provider Microsoft Entra External ID (B-1, 2026-11-12).
+Boot 4.x, Maven Wrapper); identity provider Microsoft Entra External ID (B-1, 2026-11-12).
 
 ### 4.1 Open decisions to settle before the phase that needs them
 
@@ -140,7 +142,7 @@ Boot 4.1, Maven Wrapper); identity provider Microsoft Entra External ID (B-1, 20
 |---|---|---|
 | ADR-0004 schema strategy, ADR-0006 REST/OpenAPI | Accept as proposed | Gate 2 |
 | ADR-0005 authentication (provider-neutral OIDC) | Accept; BFF session in Phase 9 | Gate 2 |
-| Image scanner (BE-1.13) | Trivy (Apache-2.0), same version and policy as `atlas` — implemented 2026-11-26; confirm at infra INF-2.0 | Gate 1 |
+| Image scanner (BE-1.13) | Trivy (Apache-2.0), same version and policy as `atlas` — in CI since 2026-11-27; confirm at infra INF-2.0 | INF-2.0 |
 | Staging access before Phase 9 (R-2) | Staging allow-listed (NSG) plus a staging-only Entra app registration for e2e | Gate 3 |
 | Breaking-change check tool (BE-4.1) | Choose and licence-check during BE-4.1 | Phase 4 |
 | Migration execution (B-7, infra ADR-0008) | Start-up Flyway until Phase 9, then PreSync Job | Phase 9 |

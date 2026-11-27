@@ -1,7 +1,7 @@
 # PLAN-BACKEND: atlas-backend (repository `atlas-microservices`)
 
-- Status: **Phase 0 plan, Proposed**, awaiting owner review. **Phase 1 foundations delivered** on
-  2026-11-12 (uncommitted, see [§14](#14-pr-sized-backlog-phases-14)).
+- Status: **Phase 0 plan, Proposed**, awaiting owner review. **Phase 1 foundations delivered**; Gate 1 met
+  on 2026-11-27 (see [§14](#14-pr-sized-backlog-phases-14)).
 - Owner: @hsnrzv
 - Phase order and gates: [implementation roadmap](../implementation/roadmap.md).
 - Companion documents: [PLAN-DATABASE](PLAN-DATABASE.md),
@@ -366,7 +366,7 @@ flowchart LR
 - Supply chain: Dependabot (Maven, Actions, Docker, Compose), dependency review on PRs, Maven Wrapper and
   all builds use Maven Central only (no private mirrors referenced). Every build produces a CycloneDX SBOM;
   `backend-container` scans the image with Trivy (fixable critical/high fail) and uploads an image SBOM
-  (BE-1.13). Secret scanning with push protection is an owner setting (BE-1.14).
+  (BE-1.13). Secret scanning with push protection is on (BE-1.14).
 - Container: non-root UID 10001, no shell for the user, no package manager use at runtime, read-only root
   filesystem possible with a writable `/tmp` volume.
 - Problem Details never expose stack traces, SQL or personal values.
@@ -404,11 +404,11 @@ Contract for `atlas-infra` (also in README):
 | R-6 | Cross-module references dangle (no cross-module FKs, ADR-0004) | Medium | Low–Medium | Validation through owning module API, synchronous clean-up listeners, optional consistency check query |
 | R-7 | Testcontainers tests silently skipped (no Docker) | Medium locally | Medium | CI asserts `*IT` reports exist; README states Docker is required for full verification |
 | R-8 | Over-engineering for one user (modules, events, BFF) slows delivery | Medium | Medium | Phase gates, PR-sized backlog, defer registry/BFF/tracing until needed |
-| R-9 | Repository visibility/plan unknown: dependency review needs the dependency graph (and GitHub Advanced Security for private repositories) | Medium | Low | Owner checks repository settings (BE-1.14); the job can be made non-blocking if unavailable |
+| R-9 | ~~Repository visibility/plan unknown: dependency review needs the dependency graph~~ **Closed 2026-11-27:** the repository is public and the dependency graph is on; `Dependency review` passes | — | — | — |
 
 ## 12. Measurable acceptance criteria
 
-**Phase 1 (met locally on 2026-11-12):**
+**Phase 1 (met locally on 2026-11-12, on GitHub on 2026-11-27):**
 
 - `./mvnw -B verify` with JDK 25 passes (re-verified after the switch from JDK 21, ADR-0008): `ModularityTests` and `AtlasApplicationIT` green, the latter
   against `postgres:18.6-alpine`.
@@ -420,7 +420,7 @@ Contract for `atlas-infra` (also in README):
 - `./mvnw spring-boot:run -Dspring-boot.run.profiles=local` starts PostgreSQL from `compose.yaml` and
   reports health `UP`.
 - Workflow files are valid YAML and pass `actionlint`.
-- Still open: first green run of both workflows on GitHub (requires a push, which is an owner action).
+- Both workflows are green on GitHub and required by the `main` ruleset (BE-1.14, BE-1.15).
 
 **Phase 3 (proposed):**
 
@@ -500,10 +500,12 @@ cross-referencing from `atlas` `IMPLEMENTATION-ROADMAP.md`.
   `backend-sbom`); Trivy v0.76.2 in `backend-container` with the same pinned action and policy as `atlas` F2-11
   (fixable CRITICAL/HIGH fail, `.trivyignore` with expiry) plus an image SBOM (`backend-image-sbom`). Trivy is the
   shared-scanner proposal; final confirmation is `atlas-infra` INF-2.0.
-- [ ] **BE-1.14** Owner actions on GitHub (not code): push the repository, enable dependency graph,
+- [x] **BE-1.14** Owner actions on GitHub (not code): push the repository, enable dependency graph,
   Dependabot alerts, secret scanning with push protection, branch protection on `main` requiring
-  `backend-ci` and `backend-container`. Pushed to `origin/main` by 2026-11-26; settings and branch protection open.
-- [ ] **BE-1.15** First green CI run of both workflows on GitHub (depends on BE-1.14).
+  `backend-ci` and `backend-container`. Done 2026-11-27: repository public; ruleset `protect-main` on the default
+  branch requires a PR (conversations resolved) and the checks `Maven verify (unit, modularity, Testcontainers IT)`
+  and `Build and smoke-test image (no push)`, and blocks force pushes and deletion.
+- [x] **BE-1.15** First green CI run of both workflows on GitHub (depends on BE-1.14). Done 2026-11-27.
 
 ### Phase 2: contract alignment (frontend builds the mock-backed shell)
 
@@ -518,7 +520,9 @@ No backend feature code. The backend side of Phase 2 makes Phase 3 unambiguous.
   `audiences`; report findings in ADR-0006/0005.
 - [ ] **BE-2.4** `backend-container.yml` publishes `main-<sha>` to GHCR on `main` (OIDC `GITHUB_TOKEN`
   `packages: write`, provenance, SBOM from BE-1.13, image scan) and opens the bump PR to `atlas-infra`
-  `environments/dev` through the GitHub App. Starts once `atlas-infra` ADR-0007 is accepted.
+  `environments/dev` through the GitHub App. Starts once `atlas-infra` ADR-0007 is accepted. The published image
+  also carries the third-party licence texts (`/licenses`; open item in
+  [THIRD-PARTY-NOTICES](../../THIRD-PARTY-NOTICES.md#open-licence-items)).
 
 ### Phase 3: core backend domain and database (order per §18)
 
