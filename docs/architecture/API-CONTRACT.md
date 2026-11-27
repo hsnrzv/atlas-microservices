@@ -7,7 +7,7 @@
 - Source: `project-instruction.md` §3, §5, §7, §11.5–§11.6, §12.4, §13.4.
 - The binding contract will be the generated OpenAPI document (Phase 3). This file explains the
   conventions and the planned endpoint families. Names may still change during Phase 3 review.
-- Phase 2 alignment with the delivered frontend (2026-11-28): A-1…A-6 resolved, FQ-1…FQ-22 answered; see
+- Phase 2 alignment with the delivered frontend (2026-11-27): A-1…A-6 resolved, FQ-1…FQ-22 answered; see
   [phase-2-contract-review.md](../implementation/phase-2-contract-review.md). "(FQ-n)" marks a field or rule
   added by that review.
 
@@ -543,7 +543,7 @@ cases).
 ## 11. OpenAPI generation (Proposed, Phase 3)
 
 - Code-first with springdoc-openapi (`springdoc-openapi-starter-webmvc-api`, Apache-2.0). Spike BE-2.3
-  (2026-11-28): **3.2.1** works with Spring Boot 4.2.0 and Jackson 3.1.8 and produces OpenAPI 3.1.0. The
+  (2026-11-27): **3.2.1** works with Spring Boot 4.2.0 and Jackson 3.1.8 and produces OpenAPI 3.1.0. The
   snapshot must be made reproducible and accurate (findings S-3…S-5 in
   [phase-2-contract-review.md §4](../implementation/phase-2-contract-review.md#4-spike-be-23-springdoc-3x-and-jwt-audiences)):
   - `BigDecimal` is documented as `number` by default although it is serialised as a string; a global
@@ -585,7 +585,7 @@ Everything else is authenticated.
 
 ## 14. Open decisions (API)
 
-All six were resolved on 2026-11-28 in the Phase 2 review
+All six were resolved on 2026-11-27 in the Phase 2 review
 ([phase-2-contract-review.md §1](../implementation/phase-2-contract-review.md#1-api-decisions-a-1a-6)): the
 recommended default is adopted in each case. Changing one after Phase 4 is a breaking change ([§10](#10-versioning-and-compatibility)).
 

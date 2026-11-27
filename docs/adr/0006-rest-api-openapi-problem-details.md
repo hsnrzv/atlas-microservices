@@ -1,8 +1,8 @@
 # ADR-0006: REST API under `/api/v1`, code-first OpenAPI, RFC 9457 Problem Details
 
-- Status: Proposed
+- Status: Accepted (2026-11-27, owner review BE-2.2)
 - Date: 2026-11-12
-- Deciders: @hsnrzv (owner) to review; proposed by the backend planning agent
+- Deciders: @hsnrzv (owner); proposed by the backend planning agent
 
 ## Context
 
@@ -22,7 +22,7 @@ Verified on 2026-11-12 (Maven Central): `org.springdoc:springdoc-openapi-starter
 `-webmvc-ui` latest release **3.2.0**, built against `spring-boot-starter-parent` 4.1.2, Apache-2.0. Not
 added in Phase 1 because there are no endpoints yet.
 
-Spike BE-2.3 (2026-11-28, throwaway branch, not merged): **3.2.1** runs on Spring Boot 4.2.0 with Jackson
+Spike BE-2.3 (2026-11-27, throwaway branch, not merged): **3.2.1** runs on Spring Boot 4.2.0 with Jackson
 3.1.8 and serves OpenAPI 3.1.0. Records, `UUID`, `LocalDate`, `Instant` and enums are described correctly.
 Three gaps need configuration in Phase 3 (BE-3.05):
 

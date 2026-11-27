@@ -1,8 +1,8 @@
 # ADR-0005: Authentication: provider-neutral OIDC, BFF session for web, PKCE system browser for Capacitor
 
-- Status: Proposed (provider choice accepted by the owner on 2026-11-12: Microsoft Entra External ID)
+- Status: Accepted (2026-11-27, owner review BE-2.2; provider Microsoft Entra External ID accepted 2026-11-12)
 - Date: 2026-11-12
-- Deciders: @hsnrzv (owner) to review; proposed by the backend planning agent
+- Deciders: @hsnrzv (owner); proposed by the backend planning agent
 
 ## Context
 

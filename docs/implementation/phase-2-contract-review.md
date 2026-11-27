@@ -1,6 +1,6 @@
 # Phase 2 — Contract alignment review
 
-- Date: 2026-11-28
+- Date: 2026-11-27
 - Scope: roadmap items BE-2.1, BE-2.2 (preparation), BE-2.3, DB-2.1 (preparation), DB-2.2. No feature code.
 - Inputs:
   - `atlas` `origin/main` at `5807475`: `docs/architecture/frontend.md` §6.5 (FQ-1…FQ-22), `src/app/core/models/*`,
@@ -10,7 +10,7 @@
     [ADR-0006](../adr/0006-rest-api-openapi-problem-details.md), [PLAN-BACKEND](../plan/PLAN-BACKEND.md) §13,
     [PLAN-DATABASE](../plan/PLAN-DATABASE.md) §8 and §12.
 - Result: the contract changes below are applied to API-CONTRACT, DOMAIN-MODULES and PLAN-DATABASE in the same PR.
-  The ADRs stay **Proposed** until the owner accepts them (§5). The frontend changes this review requires are listed
+  The owner accepted ADR-0004/0005/0006 on 2026-11-27 (§5). The frontend changes this review requires are listed
   in §6.
 
 ## 1. API decisions A-1…A-6
@@ -102,12 +102,12 @@ Other alignment points found in the review:
 
 ## 4. Spike BE-2.3: springdoc 3.x and JWT audiences
 
-Throwaway branch `spike/be-2.3-springdoc-jwt`, run on 2026-11-28 with JDK 25 and Docker, then deleted (not merged).
+Throwaway branch `spike/be-2.3-springdoc-jwt`, run on 2026-11-27 with JDK 25 and Docker, then deleted (not merged).
 It added `springdoc-openapi-starter-webmvc-api` 3.2.1, `spring-boot-starter-security-oauth2-resource-server` and
 `spring-security-test`, a sample controller with `Money`/`PlannedDate` records, a stateless security filter chain and
 a Testcontainers integration test.
 
-Resolved versions: Spring Boot 4.2.0, springdoc 3.2.1 (latest on Maven Central on 2026-11-28), swagger-core 3.0.0,
+Resolved versions: Spring Boot 4.2.0, springdoc 3.2.1 (latest on Maven Central on 2026-11-27), swagger-core 3.0.0,
 Jackson 3.1.8 (`tools.jackson`; annotations `com.fasterxml.jackson.annotation` 2.21), Spring Security 7.2.0,
 Nimbus JOSE + JWT 10.9.1. All Apache-2.0. No Jackson 2 `databind` on the classpath.
 
@@ -140,11 +140,11 @@ written, with the amendments made in this PR.
 
 Owner checklist (tick in the PR or a follow-up):
 
-- [ ] ADR-0004 → Accepted (or revised)
-- [ ] ADR-0005 → Accepted (or revised)
-- [ ] ADR-0006 → Accepted (or revised)
-- [ ] B-3, B-6, B-10 confirmed
-- [ ] D-1…D-9 confirmed (PLAN-DATABASE §12)
+- [x] ADR-0004 → Accepted (owner, 2026-11-27; covers D-1)
+- [x] ADR-0005 → Accepted (owner, 2026-11-27)
+- [x] ADR-0006 → Accepted (owner, 2026-11-27; covers B-6/A-6)
+- [ ] B-3, B-10 confirmed (B-6 accepted with ADR-0006)
+- [ ] D-2…D-9 confirmed (D-1 accepted with ADR-0004) (PLAN-DATABASE §12)
 - [ ] A-1…A-6 and the FQ answers in §2 confirmed
 
 ## 6. Follow-ups in other repositories

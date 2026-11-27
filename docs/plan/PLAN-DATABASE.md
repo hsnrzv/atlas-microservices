@@ -77,7 +77,7 @@
 
 ## 5. Ownership and schema strategy
 
-Proposed in ADR-0004 (open decision D-1): **one schema `atlas`, module-prefixed tables, no cross-module
+Accepted in ADR-0004 (decision D-1, 2026-11-27): **one schema `atlas`, module-prefixed tables, no cross-module
 FKs except `owner_id` → `profile_app_user`.**
 
 | Module | Prefix | Tables (MVP) | Phase |
@@ -595,10 +595,10 @@ IDs continue the PLAN-BACKEND backlog (database items are part of the same PRs w
 
 ### Phase 2
 
-- [ ] **DB-2.1** Owner review of D-1…D-9 (ADR-0004 to Accepted or revised). Prepared 2026-11-28: recommendations
-  and checklist in [phase-2-contract-review.md §5](../implementation/phase-2-contract-review.md#5-owner-review-package-be-22-db-21); waiting for the owner.
+- [ ] **DB-2.1** Owner review of D-1…D-9 (ADR-0004 to Accepted or revised). ADR-0004 (D-1) accepted by the owner
+  2026-11-27; D-2…D-9 still to be confirmed, recommended defaults apply meanwhile (checklist in [phase-2-contract-review.md §5](../implementation/phase-2-contract-review.md#5-owner-review-package-be-22-db-21)).
 - [x] **DB-2.2** Agree enum value lists with PLAN-FRONTEND (priority scale, relationship status list,
-  expense categories, onboarding step keys). Done 2026-11-28
+  expense categories, onboarding step keys). Done 2026-11-27
   ([phase-2-contract-review.md §3](../implementation/phase-2-contract-review.md#3-enum-value-lists-db-22));
   expense categories deferred to the Phase 6 finance contract.
 

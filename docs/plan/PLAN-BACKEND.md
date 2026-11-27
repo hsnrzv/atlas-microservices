@@ -158,7 +158,7 @@ Follows ADR-0006 and [API-CONTRACT §3–§4](../architecture/API-CONTRACT.md#4-
 
 ### 4.5 Security approach
 
-Decision record: ADR-0005 (Proposed). Implementation is phased:
+Decision record: ADR-0005 (Accepted 2026-11-27). Implementation is phased:
 
 | Phase | Security work |
 |---|---|
@@ -299,7 +299,7 @@ THIRD-PARTY-NOTICES in the same PR.
 | `cyclonedx-maven-plugin` | 1 follow-up | SBOM per build / image | **Added 2026-11-26 (BE-1.13):** 2.9.3 (managed by Boot 4.2.0, which also configures the execution), Apache-2.0 |
 | `spring-boot-starter-security-oauth2-resource-server` | 3 | JWT resource server | Boot-managed; the old `spring-boot-starter-oauth2-resource-server` name is deprecated since Boot 4.1 |
 | `spring-boot-starter-security-test` | 3 | Security test support (JWT post-processors) | Boot-managed, verified present for 4.1.2 (re-check on 4.2.0 when added) |
-| `springdoc-openapi-starter-webmvc-api` | 3 | Code-first OpenAPI (ADR-0006) | 3.2.1 (verified with Boot 4.2.0 in spike BE-2.3, 2026-11-28), Apache-2.0 |
+| `springdoc-openapi-starter-webmvc-api` | 3 | Code-first OpenAPI (ADR-0006) | 3.2.1 (verified with Boot 4.2.0 in spike BE-2.3, 2026-11-27), Apache-2.0 |
 | `spring-boot-configuration-processor` | 3 | Metadata for `atlas.*` properties | Boot-managed |
 | `spring-modulith-starter-jpa` | 3 or 6 (B-5) | Event publication registry | managed by `spring-modulith-bom` 2.2.0 |
 | `spring-boot-starter-security-oauth2-client`, `spring-boot-starter-session-jdbc` | 9 | Web BFF (ADR-0005) | Boot-managed |
@@ -396,7 +396,7 @@ Contract for `atlas-infra` (also in README):
 
 | ID | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|---|
-| R-1 | Spring Boot 4.x / Jackson 3 / Hibernate 7 ecosystem gaps (libraries not yet compatible, e.g. springdoc) | Medium | Medium | Verify each addition against the current Boot version before adding; time-boxed spikes in Phase 2 (BE-2.3; springdoc 3.2.1 verified on Boot 4.2 on 2026-11-28); keep dependencies minimal |
+| R-1 | Spring Boot 4.x / Jackson 3 / Hibernate 7 ecosystem gaps (libraries not yet compatible, e.g. springdoc) | Medium | Medium | Verify each addition against the current Boot version before adding; time-boxed spikes in Phase 2 (BE-2.3; springdoc 3.2.1 verified on Boot 4.2 on 2026-11-27); keep dependencies minimal |
 | R-2 | Phase 4 "e2e tests pass in staging" needs authentication, but the IdP integration is planned for Phase 9 (the IdP itself was decided on 2026-11-12, B-1) | High | High | Set up the Entra External ID tenant and resource-server configuration before Phase 4, **or** keep staging non-public (private network/port-forward) until Phase 9; never enable the dev identity outside `local` |
 | R-3 | Owner check forgotten in a new query → data leak between owners | Low (single user first) | High | Owner-scoped repository methods only, cross-owner tests per endpoint family, PR checklist item |
 | R-4 | Progress/dependency rules drift between backend and frontend | Medium | Medium | Backend returns derived values (progress, availability, reasons); frontend does not recalculate |
@@ -513,14 +513,14 @@ No backend feature code. The backend side of Phase 2 makes Phase 3 unambiguous.
 
 - [x] **BE-2.1** Review API-CONTRACT §9.1–§9.7 against the frontend mock repository interfaces in
   PLAN-FRONTEND (goal, node tree, focus view, progress, reward, dashboard DTOs); resolve A-1…A-6. Done
-  2026-11-28 against the delivered `atlas` ports and HTTP adapters: A-1…A-6 resolved, FQ-1…FQ-22 answered
+  2026-11-27 against the delivered `atlas` ports and HTTP adapters: A-1…A-6 resolved, FQ-1…FQ-22 answered
   ([phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §1–§2), API-CONTRACT updated.
 - [ ] **BE-2.2** Owner review of ADR-0004, ADR-0005, ADR-0006 and decisions B-1…B-13, D-1…D-9; update
-  statuses to Accepted or revise. Prepared 2026-11-28 (recommendations and checklist in [phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §5); waiting
-  for the owner.
+  statuses to Accepted or revise. ADR-0004/0005/0006 accepted by the owner 2026-11-27; B-3, B-10 and D-2…D-9
+  still to be confirmed, recommended defaults apply meanwhile (checklist in [phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §5).
 - [x] **BE-2.3** Time-boxed spike (throwaway branch, ≤ 1 day): springdoc 3.x with Boot 4.2/Jackson 3 for
   records with `Money` (string amount) and `PlannedDate`; JWT resource server with
-  `audiences`; report findings in ADR-0006/0005. Done 2026-11-28: springdoc 3.2.1 works; findings S-1…S-8
+  `audiences`; report findings in ADR-0006/0005. Done 2026-11-27: springdoc 3.2.1 works; findings S-1…S-8
   in [phase-2-contract-review.md](../implementation/phase-2-contract-review.md) §4 and in ADR-0005/0006; the spike branch was deleted unmerged.
 - [ ] **BE-2.4** `backend-container.yml` publishes `main-<sha>` to GHCR on `main` (OIDC `GITHUB_TOKEN`
   `packages: write`, provenance, SBOM from BE-1.13, image scan) and opens the bump PR to `atlas-infra`

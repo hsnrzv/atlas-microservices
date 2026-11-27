@@ -1,8 +1,8 @@
 # ADR-0004: Database schema strategy: one `atlas` schema with module-owned, module-prefixed tables
 
-- Status: Proposed
+- Status: Accepted (2026-11-27, owner review BE-2.2/DB-2.1)
 - Date: 2026-11-12
-- Deciders: @hsnrzv (owner) to review; proposed by the backend planning agent
+- Deciders: @hsnrzv (owner); proposed by the backend planning agent
 
 ## Context
 
