@@ -162,4 +162,5 @@ Owner checklist (tick in the PR or a follow-up):
 - Ikigai area model: add `focused` (FQ-17).
 - Fix the section references "API-CONTRACT §5/§6" → §6 (pagination) and §7 (`If-Match`).
 
-`atlas-infra`: BE-2.4 stays blocked until ADR-0007 is accepted.
+`atlas-infra`: none for the contract. BE-2.4 is done (2026-11-27): ADR-0007 accepted, backend images publish to GHCR
+and the dev bump PRs auto-merge once `manifests-ci` passes.

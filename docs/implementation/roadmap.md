@@ -2,7 +2,7 @@
 
 - Status: **Proposed 2026-11-17**, awaiting owner approval. **Phase 1 is complete and Gate 1 is met
   (2026-11-27):** the repository is public, the `main` ruleset requires both workflows, and `backend-ci` and
-  `backend-container` are green on GitHub. Phases 2–4 have not started. No feature code exists yet (only
+  `backend-container` are green on GitHub. **Phase 2 is complete and Gate 2 is met (2026-11-27)**, including BE-2.4 (GHCR publishing and auto-merged `atlas-infra` dev bump PRs). Phases 3–4 have not started. No feature code exists yet (only
   `AtlasApplication`).
 - Purpose: set the order in which the backend is built, phase by phase, with an explicit gate between phases and the
   cross-repository hand-offs that unblock the frontend and infrastructure.
@@ -53,11 +53,11 @@ Runs in parallel with the frontend's mock-backed shell (already delivered in `at
 | BE-2.1 | Review API-CONTRACT §9.1–§9.7 against the delivered frontend ports and FQ-1…FQ-22; resolve A-1…A-6 | done 2026-11-27: A-1…A-6 resolved; FQ-1…FQ-22 accepted, changed, rejected or deferred to a phase ([phase-2-contract-review.md](phase-2-contract-review.md) §1–§2); DB-2.2 enum lists agreed (§3); frontend follow-ups in §6 |
 | BE-2.2 | Owner review of ADR-0004, ADR-0005, ADR-0006, B-1…B-13 and D-1…D-9 | done 2026-11-27: ADR-0004/0005/0006 accepted; B-3, B-6, B-10, D-1…D-9, A-1…A-6 and the FQ answers confirmed by the owner ([phase-2-contract-review.md](phase-2-contract-review.md) §5); B-1, B-2, B-4, B-5, B-7…B-9, B-11…B-13 keep their recommended defaults and are decided at the time in PLAN-BACKEND §13 |
 | BE-2.3 | Spike (≤ 1 day, throwaway): springdoc 3.x with Boot 4.2/Jackson 3; JWT `audiences` | done 2026-11-27: springdoc 3.2.1 and `audiences` work; findings S-1…S-8 ([phase-2-contract-review.md](phase-2-contract-review.md) §4) recorded in ADR-0005/0006; branch deleted |
-| BE-2.4 | Publish `main-<sha>` to GHCR (provenance, SBOM, scan) and open the bump PR to `atlas-infra` | implemented 2026-11-27 (`backend-container` `publish` + `bump-infra-dev`, `/licenses` in the image); open: owner accepts `atlas-infra` ADR-0007, creates the GitHub App (variable `ATLAS_INFRA_APP_CLIENT_ID`, secret `ATLAS_INFRA_APP_PRIVATE_KEY`), first green publish and bump PR |
+| BE-2.4 | Publish `main-<sha>` to GHCR (provenance, SBOM, scan) and open the bump PR to `atlas-infra` | done 2026-11-27: `backend-container` `publish` + `bump-infra-dev` green on `main`, `/licenses` in the image; `atlas-infra` ADR-0007 accepted; GitHub App configured (`ATLAS_INFRA_APP_CLIENT_ID`, `ATLAS_INFRA_APP_PRIVATE_KEY`); bump PRs auto-merge (squash) once `manifests-ci` passes (`atlas-infra` #2, #3) |
 
 **Gate 2:** ADR-0004/0005/0006 accepted or revised; A-1…A-6 resolved and each FQ answered or deferred to a phase;
 spike findings recorded. BE-2.4 may finish later (it is not on the critical path for phase 3). **Met
-2026-11-27:** ADR-0004/0005/0006 accepted, A-1…A-6 and FQ done, spike recorded.
+2026-11-27:** ADR-0004/0005/0006 accepted, A-1…A-6 and FQ done, spike recorded; BE-2.4 done the same day.
 
 ### Phase 3 — Core domain and database
 
