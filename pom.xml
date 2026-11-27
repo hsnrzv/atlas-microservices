@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.2</version>
+		<version>4.2.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>dev.myatlas</groupId>
@@ -22,7 +22,7 @@
 
 	<properties>
 		<java.version>25</java.version>
-		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<spring-modulith.version>2.2.0</spring-modulith.version>
 		<!-- Keep in sync with distributionUrl in .mvn/wrapper/maven-wrapper.properties -->
 		<maven.version.required>3.10.1</maven.version.required>
 		<jacoco.version>0.8.16</jacoco.version>
