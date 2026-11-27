@@ -379,7 +379,7 @@ Contract for `atlas-infra` (also in README):
 
 | Item | Value |
 |---|---|
-| Image | `ghcr.io/hsnrzv/atlas-backend` (publishing in Phase 2, BE-2.4, per `atlas-infra` ADR-0007; Phase 1 CI builds without push) |
+| Image | `ghcr.io/hsnrzv/atlas-backend:main-<12-char sha>` + digest, published on every push to `main` (BE-2.4, `atlas-infra` ADR-0007); PRs build without push |
 | Build args | `VERSION`, `REVISION` (Git SHA), `CREATED` (RFC 3339) → OCI labels |
 | Port | `8080` |
 | User | UID/GID `10001` (`runAsNonRoot: true`, `runAsUser: 10001`) |
@@ -528,7 +528,13 @@ No backend feature code. The backend side of Phase 2 makes Phase 3 unambiguous.
   `packages: write`, provenance, SBOM from BE-1.13, image scan) and opens the bump PR to `atlas-infra`
   `environments/dev` through the GitHub App. Starts once `atlas-infra` ADR-0007 is accepted. The published image
   also carries the third-party licence texts (`/licenses`; open item in
-  [THIRD-PARTY-NOTICES](../../THIRD-PARTY-NOTICES.md#open-licence-items)).
+  [THIRD-PARTY-NOTICES](../../THIRD-PARTY-NOTICES.md#open-licence-items)). Implemented 2026-11-27: `publish` job
+  (only job with `packages: write`, main only) pushes `main-<12-char sha>` with `provenance: mode=max` and `sbom: true`,
+  refuses existing tags, Trivy-scans the published digest; `bump-infra-dev` opens or updates `chore/bump-backend-dev`
+  in `atlas-infra` (newTag + digest, never older than what is there) with a GitHub App token; `/licenses` in the image
+  (`THIRD-PARTY.txt`, per-jar LICENSE/NOTICE files, SPDX texts in `licenses/`). Open (owner): accept `atlas-infra`
+  ADR-0007, create the GitHub App and set `ATLAS_INFRA_APP_CLIENT_ID`/`ATLAS_INFRA_APP_PRIVATE_KEY`, first green
+  publish run and first bump PR passing `manifests-ci`.
 
 ### Phase 3: core backend domain and database (order per §18)
 

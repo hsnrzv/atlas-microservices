@@ -1,7 +1,8 @@
-# Only the Maven Wrapper, pom.xml and src/ are needed to build the image.
+# Only the Maven Wrapper, pom.xml, src/ and the licence texts (licenses/) are needed to build the image.
 *
 !.mvn/
 !mvnw
 !pom.xml
 !src/
+!licenses/
 .mvn/wrapper/maven-wrapper.jar

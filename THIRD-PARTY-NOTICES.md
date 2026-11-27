@@ -88,10 +88,14 @@ the permissive or weak-copyleft option applies to unmodified binary use.
 | `eclipse-temurin:25-jdk-noble`, `eclipse-temurin:25-jre-noble` | Java 25 (25.0.5 at build time) | OpenJDK: GPL-2.0 with Classpath Exception; image definitions: Apache-2.0 ([adoptium/containers](https://github.com/adoptium/containers)); Ubuntu 24.04 packages under their own licenses | Container build and runtime |
 | `postgres:18.6-alpine` | PostgreSQL 18.6 | PostgreSQL License; image definitions: MIT ([docker-library/postgres](https://github.com/docker-library/postgres)) | Local database, Testcontainers, CI smoke test |
 | `actions/checkout`, `actions/setup-java`, `actions/upload-artifact`, `actions/dependency-review-action` | v7, v6, v7, v5 | MIT | CI |
-| `docker/setup-buildx-action`, `docker/build-push-action` | v4, v7 | Apache-2.0 | Container build in CI |
+| `docker/setup-buildx-action`, `docker/build-push-action`, `docker/login-action` | v4, v7, v4 | Apache-2.0 | Container build, GHCR login and publishing in CI |
+| `actions/create-github-app-token` | v3 | MIT | GitHub App token for the `atlas-infra` dev bump PR |
+| License Maven plugin (`license-maven-plugin`) | 2.10.0 | LGPL-3.0-only | Generates `/licenses/THIRD-PARTY.txt` in the image build; not packaged |
+| SPDX license-list-data (`licenses/*.txt`) | v3.29.0 | CC-BY-3.0 (list data); each file is the text of the licence it names | Canonical licence texts copied to `/licenses/texts/` |
 
 ## Open licence items
 
-| Item | Why | Action | When |
-|---|---|---|---|
-| Licence texts in the image (moved from the `atlas` matrix, L3) | Apache-2.0 NOTICE files and EPL-2.0/EDL-1.0 texts must travel with distributed binaries; the image does not contain them yet | Generate `THIRD-PARTY.txt` and collect the NOTICE files in the build, copy them into the image (for example `/licenses`) | with image publishing (BE-2.4), before any public release |
+None. The image carries the licence texts since BE-2.4 (2026-11-27): `/licenses/THIRD-PARTY.txt` (every packaged
+library and its licence), `/licenses/jars/` (the LICENSE/NOTICE files bundled in each jar, including Apache-2.0 NOTICE
+files) and `/licenses/texts/` (SPDX texts from [`licenses/`](licenses/README.md)). Add the SPDX text to `licenses/`
+when a dependency brings a new licence class.

@@ -1,10 +1,17 @@
 name: backend-container
 
-# Builds, smoke-tests and scans the image on every PR and on main, WITHOUT pushing.
-# BE-1.13: Trivy image scan (fixable CRITICAL/HIGH fail; exceptions in .trivyignore) and a CycloneDX image SBOM.
-# Publishing immutable images to ghcr.io/hsnrzv/atlas-backend (provenance, then a PR to atlas-infra to bump the
-# digest) is BE-2.4 and follows atlas-infra ADR-0007, so no registry credentials or `packages: write` permission
-# exist before the deployment path has been reviewed.
+# build-image (every PR and main, no push): builds, smoke-tests and scans the image (BE-1.13: Trivy, fixable
+# CRITICAL/HIGH fail, exceptions in .trivyignore) and uploads a CycloneDX image SBOM. Required check on `main`.
+#
+# On push to main only (BE-2.4, atlas-infra ADR-0007):
+#   publish         pushes the immutable tag ghcr.io/hsnrzv/atlas-backend:main-<12-char sha> with provenance
+#                   (mode=max) and SBOM attestations, refuses to overwrite an existing tag, never pushes `latest`,
+#                   and scans the published digest. Only this job has `packages: write`.
+#   bump-infra-dev  opens or updates one PR in hsnrzv/atlas-infra that sets newTag + digest for the backend image
+#                   in environments/dev/kustomization.yaml, using a GitHub App installation token (repository
+#                   variable ATLAS_INFRA_APP_CLIENT_ID, secret ATLAS_INFRA_APP_PRIVATE_KEY). Skipped with a
+#                   warning until the owner has configured the App.
+# Releases (X.Y.Z on an already published digest) and staging/prod promotion are not part of this workflow.
 # See docs/plan/PLAN-BACKEND.md (backlog) and atlas-infra docs/plan/PLAN-INFRASTRUCTURE-CICD.md.
 
 on:
@@ -21,6 +28,7 @@ concurrency:
 
 env:
   IMAGE: atlas-backend:ci
+  REGISTRY_IMAGE: ghcr.io/hsnrzv/atlas-backend
 
 jobs:
   build-image:
@@ -75,6 +83,8 @@ jobs:
             curl -fsS "http://localhost:8080$path" | grep -q '"status":"UP"'
           done
           test "$(docker inspect --format '{{.Config.User}}' "$IMAGE")" = "10001:10001"
+          # Third-party licence texts travel with the image (THIRD-PARTY-NOTICES.md).
+          docker run --rm --entrypoint test "$IMAGE" -s /licenses/THIRD-PARTY.txt
 
       - name: Container logs
         if: always()
@@ -112,3 +122,203 @@ jobs:
           path: atlas-backend-image.cdx.json
           retention-days: 30
           if-no-files-found: warn
+
+  publish:
+    name: Publish image to GHCR (main only)
+    needs: build-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Image metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          tag="main-${GITHUB_SHA::12}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "created=$(git log -1 --format=%cI "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # GHCR does not enforce tag immutability, so the workflow does (ADR-0007): an existing tag is never overwritten.
+      - name: Refuse to overwrite an existing tag
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          if docker buildx imagetools inspect "$REGISTRY_IMAGE:$TAG" >/dev/null 2>&1; then
+            echo "::error::$REGISTRY_IMAGE:$TAG already exists; published tags are immutable"
+            exit 1
+          fi
+
+      # Same Dockerfile, build args and layer cache as build-image, which smoke-tested and scanned this commit.
+      - name: Build and push (provenance + SBOM attestations)
+        id: push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.tag }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.tag }}
+            REVISION=${{ github.sha }}
+            CREATED=${{ steps.meta.outputs.created }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+
+      # Scans the published bytes. A failure here stops the dev bump PR, so the image is never deployed.
+      - name: Scan published image (Trivy)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.76.2
+          image-ref: ${{ env.REGISTRY_IMAGE }}@${{ steps.push.outputs.digest }}
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
+          trivyignores: .trivyignore
+
+      - name: Summary
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+          APP_CONFIGURED: ${{ vars.ATLAS_INFRA_APP_CLIENT_ID != '' }}
+        run: |
+          {
+            echo "### Published"
+            echo
+            echo "\`$REGISTRY_IMAGE:$TAG@$DIGEST\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$APP_CONFIGURED" != "true" ]]; then
+            echo "::warning::ATLAS_INFRA_APP_CLIENT_ID is not set; no atlas-infra dev bump PR is opened"
+          fi
+
+  bump-infra-dev:
+    name: Open atlas-infra dev bump PR
+    needs: publish
+    if: vars.ATLAS_INFRA_APP_CLIENT_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    # One bump at a time; a queued run replaces an older pending one.
+    concurrency:
+      group: bump-infra-dev-backend
+      cancel-in-progress: false
+    env:
+      INFRA_REPO: hsnrzv/atlas-infra
+      BUMP_BRANCH: chore/bump-backend-dev
+      KUSTOMIZATION: environments/dev/kustomization.yaml
+      TAG: ${{ needs.publish.outputs.tag }}
+      DIGEST: ${{ needs.publish.outputs.digest }}
+    steps:
+      - name: GitHub App token (atlas-infra only)
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.ATLAS_INFRA_APP_CLIENT_ID }}
+          private-key: ${{ secrets.ATLAS_INFRA_APP_PRIVATE_KEY }}
+          owner: hsnrzv
+          repositories: atlas-infra
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout atlas-infra
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.INFRA_REPO }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: atlas-infra
+          fetch-depth: 0
+
+      - name: Update dev image and open or update the PR
+        working-directory: atlas-infra
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          SOURCE_TOKEN: ${{ github.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^main-[0-9a-f]{12}$ ]] || { echo "::error::unexpected tag '$TAG'"; exit 1; }
+          [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "::error::unexpected digest '$DIGEST'"; exit 1; }
+
+          select='.images[] | select(.name == strenv(REGISTRY_IMAGE))'
+          current_tag() { yq "$select | .newTag" "$KUSTOMIZATION"; }
+
+          # Never replace a newer commit with an older one (runs can finish out of order).
+          if git ls-remote --exit-code --heads origin "$BUMP_BRANCH" >/dev/null; then
+            git show "origin/$BUMP_BRANCH:$KUSTOMIZATION" > /tmp/branch-kustomization.yaml
+            open_tag="$(yq "$select | .newTag" /tmp/branch-kustomization.yaml)"
+          fi
+          for existing in "$(current_tag)" "${open_tag:-}"; do
+            if [[ "$existing" =~ ^main-([0-9a-f]{12})$ ]]; then
+              status="$(GH_TOKEN="$SOURCE_TOKEN" gh api \
+                "repos/$GITHUB_REPOSITORY/compare/${GITHUB_SHA::12}...${BASH_REMATCH[1]}" --jq .status || echo unknown)"
+              if [[ "$status" == "ahead" || "$status" == "identical" ]]; then
+                echo "::notice::$existing is the same as or newer than $TAG; nothing to bump"
+                exit 0
+              fi
+            fi
+          done
+
+          previous_digest="$(yq "$select | .digest // \"\"" "$KUSTOMIZATION")"
+          previous="$(current_tag)${previous_digest:+@$previous_digest}"
+          git switch -C "$BUMP_BRANCH" origin/main
+          # yq drops blank lines; apply only the real change so the file keeps its formatting.
+          yq "($select) |= (.newTag = strenv(TAG) | .digest = strenv(DIGEST))" "$KUSTOMIZATION" > /tmp/bumped.yaml
+          diff -B "$KUSTOMIZATION" /tmp/bumped.yaml > /tmp/bump.diff || true
+          [[ -s /tmp/bump.diff ]] && patch -s "$KUSTOMIZATION" < /tmp/bump.diff
+          [[ "$(current_tag)" == "$TAG" && "$(yq "$select | .digest" "$KUSTOMIZATION")" == "$DIGEST" ]]
+          git --no-pager diff
+          git diff --exit-code --quiet && { echo "::notice::already at $TAG"; exit 0; }
+
+          bot_id="$(gh api "users/${APP_SLUG}%5Bbot%5D" --jq .id)"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${bot_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+          git commit -q -am "chore(dev): bump atlas-backend to $TAG" \
+            -m "Source: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA" \
+            -m "Image: $REGISTRY_IMAGE:$TAG@$DIGEST"
+          git push --force origin "$BUMP_BRANCH"
+
+          title="chore(dev): bump atlas-backend to $TAG"
+          body="$(cat <<BODY
+          ## Summary
+
+          Automated dev bump from \`$GITHUB_REPOSITORY\` \`backend-container\` ([run]($RUN_URL)), ADR-0007.
+
+          - Image: \`$REGISTRY_IMAGE:$TAG@$DIGEST\`
+          - Source commit: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          - Published with provenance and SBOM attestations; Trivy scan of the published digest passed.
+
+          ## Type of change
+
+          - [x] Image promotion (tag/digest bump) — environment: \`dev\`
+
+          Rollback target: \`$previous\` (revert this PR).
+          BODY
+          )"
+          if [[ "$(gh pr list --repo "$INFRA_REPO" --head "$BUMP_BRANCH" --state open --json number --jq length)" -gt 0 ]]; then
+            gh pr edit "$BUMP_BRANCH" --repo "$INFRA_REPO" --title "$title" --body "$body"
+          else
+            gh pr create --repo "$INFRA_REPO" --base main --head "$BUMP_BRANCH" --title "$title" --body "$body"
+          fi

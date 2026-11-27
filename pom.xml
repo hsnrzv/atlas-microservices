@@ -26,6 +26,7 @@
 		<!-- Keep in sync with distributionUrl in .mvn/wrapper/maven-wrapper.properties -->
 		<maven.version.required>3.10.1</maven.version.required>
 		<jacoco.version>0.8.16</jacoco.version>
+		<license-maven-plugin.version>2.10.0</license-maven-plugin.version>
 		<!-- Set by the JaCoCo agents and extended (not replaced) by the surefire/failsafe argLine below -->
 		<argLine/>
 	</properties>
@@ -245,6 +246,19 @@
 				     SBOM (OS packages + jars) is produced by Trivy in backend-container. -->
 				<groupId>org.cyclonedx</groupId>
 				<artifactId>cyclonedx-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<!-- Third-party licence list for the image (BE-2.4). Not bound to a phase; the Dockerfile runs
+				     `license:add-third-party` and copies target/licenses/ into the image as /licenses. -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>${license-maven-plugin.version}</version>
+				<configuration>
+					<outputDirectory>${project.build.directory}/licenses</outputDirectory>
+					<excludedScopes>test,provided,system</excludedScopes>
+					<includeOptional>false</includeOptional>
+					<sortArtifactByName>true</sortArtifactByName>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
