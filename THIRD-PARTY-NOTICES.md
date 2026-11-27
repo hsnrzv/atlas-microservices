@@ -8,8 +8,9 @@ License identifiers were taken from the artifacts' published POM metadata via
 `./mvnw org.codehaus.mojo:license-maven-plugin:add-third-party` (output in
 `target/licenses/THIRD-PARTY.txt`, not committed) and, for GitHub Actions and container images, from the
 GitHub repository license API. Re-run the plugin and update this file whenever a dependency is added,
-removed or upgraded (Dependabot PRs included). The consolidated cross-repository matrix lives in
-`atlas/docs/architecture/DEPENDENCY-LICENSE-MATRIX.md`.
+removed or upgraded (Dependabot PRs included). This file is the only backend dependency inventory. The
+cross-repository licence policy (allowed classes, rules for exceptions) lives in
+`atlas/docs/architecture/DEPENDENCY-LICENSE-MATRIX.md`, which links here instead of repeating backend versions.
 
 **Project license:** not chosen yet. This is an open owner decision, so there is no `LICENSE` file.
 
@@ -88,3 +89,9 @@ the permissive or weak-copyleft option applies to unmodified binary use.
 | `postgres:18.6-alpine` | PostgreSQL 18.6 | PostgreSQL License; image definitions: MIT ([docker-library/postgres](https://github.com/docker-library/postgres)) | Local database, Testcontainers, CI smoke test |
 | `actions/checkout`, `actions/setup-java`, `actions/upload-artifact`, `actions/dependency-review-action` | v7, v6, v7, v5 | MIT | CI |
 | `docker/setup-buildx-action`, `docker/build-push-action` | v4, v7 | Apache-2.0 | Container build in CI |
+
+## Open licence items
+
+| Item | Why | Action | When |
+|---|---|---|---|
+| Licence texts in the image (moved from the `atlas` matrix, L3) | Apache-2.0 NOTICE files and EPL-2.0/EDL-1.0 texts must travel with distributed binaries; the image does not contain them yet | Generate `THIRD-PARTY.txt` and collect the NOTICE files in the build, copy them into the image (for example `/licenses`) | with image publishing (BE-2.4), before any public release |
