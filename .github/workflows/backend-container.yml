@@ -32,8 +32,30 @@ env:
   REGISTRY_IMAGE: ghcr.io/hsnrzv/atlas-backend
 
 jobs:
+  # Documentation-only changes skip the image build, and with it publish and the dev bump: no new image tag for a
+  # commit that cannot change the image. A job skipped by its `if` reports success, so the required check passes.
+  changes:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.changes.outputs.code }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: changes
+        run: bash .github/scripts/detect-code-changes.sh
+        env:
+          BEFORE: ${{ github.event.before }}
+
   build-image:
     name: Build and smoke-test image (no push)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

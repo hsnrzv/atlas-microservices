@@ -138,6 +138,7 @@ published digest) and staging/prod promotion are separate, human-reviewed steps.
 ├── .github/
 │   ├── workflows/backend-ci.yml         # ./mvnw verify (+ Testcontainers), coverage report, SBOM, dependency review on PRs
 │   ├── workflows/backend-container.yml  # docker build + smoke test + Trivy scan and image SBOM; on main: GHCR publish + atlas-infra dev bump PR
+│   ├── scripts/detect-code-changes.sh   # both workflows skip the build for documentation-only changes (docs/**, *.md)
 │   ├── CODEOWNERS, dependabot.yml, pull_request_template.md
 ├── .mvn/wrapper/                        # Maven Wrapper configuration (Maven 3.10.1)
 ├── docs/

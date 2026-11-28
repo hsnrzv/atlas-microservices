@@ -14,8 +14,30 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Documentation-only changes skip the Maven build. A job skipped by its `if` reports success, so the required
+  # check still passes (a workflow-level path filter would leave it pending and block the merge).
+  changes:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.changes.outputs.code }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: changes
+        run: bash .github/scripts/detect-code-changes.sh
+        env:
+          BEFORE: ${{ github.event.before }}
+
   verify:
     name: Maven verify (unit, modularity, Testcontainers IT)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
